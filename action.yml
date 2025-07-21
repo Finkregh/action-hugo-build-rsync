@@ -136,7 +136,7 @@ runs:
 
         echo "base URL is ${HUGO_BASEURL}"
         hugo build --minify
-        echo site_url="${HUGO_BASEURL}" >> $GITHUB_OUTPUT
+        echo HUGO_BASEURL="${HUGO_BASEURL}" >> ${FORGEJO_ENV}
 
     - name: Save Hugo resources
       uses: actions/cache/save@v4
