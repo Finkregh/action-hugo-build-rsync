@@ -37,12 +37,13 @@ inputs:
   main_rsync_rsh:
     description: Value for 'RSYNC_RSH', e.g. 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'; defaults to 'ssh'
     default: ssh
+    required: false
   pr_rsync_rsh:
     description: Value for 'RSYNC_RSH' for PR builds; defaults to 'main_rsync_rsh', which defaults to 'ssh'
     required: false
   main_rsync_args:
     description: additional rsync arguments, e.g. '--dry-run'
-    default: "-atv --progress --delete"
+    default: -atv --progress --delete
   pr_rsync_args:
     description: additional rsync arguments for PR build; defaults to 'main_rsync_args'
     required: false
@@ -100,8 +101,8 @@ runs:
         RSYNC_SERVER_PR="${{ inputs.pr_rsync_server }}"
         RSYNC_USER="${{ inputs.main_rsync_user }}"
         RSYNC_USER_PR="${{ inputs.pr_rsync_user }}"
-        RSYNC_RSH="${{ inputs.main_rsync_rsh}}"
-        RSYNC_RSH_PR="${{ inputs.pr_rsync_rsh}}"
+        RSYNC_RSH=${{ inputs.main_rsync_rsh}}
+        RSYNC_RSH_PR=${{ inputs.pr_rsync_rsh}}
         RSYNC_DST_BASEDIR="${{ inputs.main_rsync_destination_dir }}"
         RSYNC_DST_BASEDIR_PR="${{ inputs.pr_rsync_destination_dir}}"
 
