@@ -164,7 +164,7 @@ runs:
         echo '${{ inputs.ssh_secret_key }}' | ssh-add -
         
         set -x
-        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}/"
+        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}"
         #if [ "${FORGEJO_EVENT_NAME}" == "pull_request" ] ; then
         #  mv public ${RSYNC_DEST_DIR}
         #  rsync ${RSYNC_ARGS} ${RSYNC_DEST_DIR} "${RSYNC_USER}@$#{RSYNC_SERVER}:"
