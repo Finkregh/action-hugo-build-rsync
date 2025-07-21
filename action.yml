@@ -164,6 +164,8 @@ runs:
         echo '${{ inputs.ssh_secret_key }}' | ssh-add -
         
         echo rsync_rsh=${RSYNC_RSH}
+        set | grep RSYNC
+        set | grep HUGO
         set -x
         if [ "${FORGEJO_EVENT_NAME}" == "pull_request" ] ; then
           mv public ${RSYNC_DEST_DIR}
