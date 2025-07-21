@@ -100,8 +100,8 @@ runs:
         RSYNC_SERVER_PR="${{ inputs.pr_rsync_server }}"
         RSYNC_USER="${{ inputs.main_rsync_user }}"
         RSYNC_USER_PR="${{ inputs.pr_rsync_user }}"
-        RSYNC_RSH=${{ inputs.main_rsync_rsh}}
-        RSYNC_RSH_PR=${{ inputs.pr_rsync_rsh}}
+        RSYNC_RSH="${{ inputs.main_rsync_rsh}}"
+        RSYNC_RSH_PR="${{ inputs.pr_rsync_rsh}}"
         RSYNC_DST_BASEDIR="${{ inputs.main_rsync_destination_dir }}"
         RSYNC_DST_BASEDIR_PR="${{ inputs.pr_rsync_destination_dir}}"
 
