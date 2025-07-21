@@ -96,7 +96,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-
     - id: preparation_packages
       name: Install required packages
       run: apk add  curl bash openssh-client rsync tar
@@ -155,7 +154,6 @@ runs:
 
         export HUGO_ARGS RSYNC_ARGS RSYNC_SERVER RSYNC_USER RSYNC_RSH HUGO_DOMAIN RSYNC_DEST_DIR
         
-
     - id: build
       name: Build
       shell: bash
