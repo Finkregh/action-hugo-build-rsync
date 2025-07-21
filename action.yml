@@ -7,37 +7,7 @@ description: |
   Expected evironment:
     - secret: SSH_PRIVATE_KEY
       used for authentication
-    - 
-
-  If `binary` is specified, Forgejo downloads the binary from the URL and uses
-  it to start an instance.
-
-  Otherwise, `image` and `image-version` must be specified and Forgejo
-  runs from the corresponding container image using docker.
-
-  The forgejo-test-helper.sh script is available to help test and debug actions.
-
-  `forgejo=http://root:admin1234@steps.forgejo.outputs.host-port`
-
-  * `forgejo-test-helper.sh push_self_action $forgejo root myaction vTest`
-    Creates the repository `$forgejo/root/myaction` and populates it with the
-    content of the repository under test, except for the `.forgejo` directory
-    (it would otherwise create an infinite loop). The tag `vTest` is
-    set to the SHA under test.
-  * `forgejo-test-helper.sh run_workflow testrepo $forgejo root testrepo myaction`
-    Creates the repository `$forgejo/root/testrepo` and populates it with the
-    content of the `testrepo` directory. All occurrences of `SELF` in
-    `testrepo/.forgejo/workflows/*.yml` are replaced with `$forgejo/root/myaction`.
-  * `forgejo-test-helper.sh push testrepo $forgejo root testrepo`
-    Creates the repository `$forgejo/root/testrepo` and populates it with the
-    content of the `testrepo` directory.
-
-  The combination of `push_self_action` and `run_workflow` allows to
-  run Forgejo Actions workflows from `testrepo` that use the action
-  under test (`myaction`) to verify it works as intended.
-
-  The [forgejo-curl.sh](https://code.forgejo.org/forgejo/forgejo-curl#forgejo-curlsh)
-  script is logged in the instance and ready to be used with web or api endpoints.
+    - d
 
 inputs:
   hugo_args:
@@ -57,24 +27,24 @@ inputs:
     description: server name used for rsync destination
   pr_rsync_server:
     description: server name used for rsync destination for PR build; defaults to 'main_rsync_server'
-    default: ""
+    required: false
   main_rsync_user:
     description: username for the rsync destination
   pr_rsync_user:
     description: username for the rsync destination for PR build, defaults to 'main_rsync_user'
-    default: ""
+    required: false
   main_rsync_rsh:
     description: Value for 'RSYNC_RSH', e.g. 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'; defaults to 'ssh'
     default: ssh
   pr_rsync_rsh:
     description: Value for 'RSYNC_RSH' for PR builds; defaults to 'main_rsync_rsh', which defaults to 'ssh'
-    default: ""
+    required: false
   main_rsync_args:
     description: additional rsync arguments, e.g. '--dry-run'
     default: "-atv --progress --delete"
   pr_rsync_args:
     description: additional rsync arguments for PR build; defaults to 'main_rsync_args'
-    default: ""
+    required: false
   ssh_known_hosts:
     description: content of ssh UserKnownHostsFile, used by rsync; generate by running 'ssh-keyscan hostname'
 
@@ -96,10 +66,17 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - id: preparation_packages
-      name: Install required packages
+    - name: Install required packages
       run: apk add  curl bash openssh-client rsync tar
       shell: sh
+
+    - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+      shell: bash
+    
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: ${{ inputs.git_checkout_depth }}
 
     - name: Restore Hugo resources
       uses: actions/cache/restore@v4
@@ -210,3 +187,6 @@ runs:
             forgejo-curl.sh --verbose api_json --data-raw '{"body":"Website preview: ${{ env.HUGO_BASEURL }}"}' ${{ env.FORGEJO_SERVER_URL }}/api/v1/repos/${{ env.FORGEJO_REPOSITORY }}/issues/${{ forge.event.pull_request.number }}/comments
           fi
         fi
+branding:
+  icon: 'check'
+  color: 'blue'
