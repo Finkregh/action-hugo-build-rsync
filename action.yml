@@ -47,6 +47,8 @@ inputs:
     required: false
   ssh_known_hosts:
     description: content of ssh UserKnownHostsFile, used by rsync; generate by running 'ssh-keyscan hostname'
+  ssh_secret_key:
+    description: SSH key for rsync
 
   hugo_cachedir:
     description: Where to point HUGO_CACHEDIR to; should not be changed to allow caching in CI
@@ -159,8 +161,7 @@ runs:
         echo "${{ inputs.ssh_known_hosts }}" > ~/.ssh/known_hosts
         
         eval $(ssh-agent -s)
-        echo "${{ secrets.SSH_PRIVATE_KEY }}"
-        printf "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
+        printf "${{ inputs.ssh_secret_key }}" | ssh-add -
         
         set -x
         rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}/"
