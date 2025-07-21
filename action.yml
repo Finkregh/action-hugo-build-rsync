@@ -105,6 +105,7 @@ runs:
       shell: bash
     - uses: actions/checkout@v4
       with:
+        path: ${{ github.repository }}
         submodules: recursive
         fetch-depth: ${{ inputs.git_checkout_depth }}
 
