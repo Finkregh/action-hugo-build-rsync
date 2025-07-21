@@ -67,7 +67,7 @@ runs:
   using: "composite"
   steps:
     - name: Install required packages
-      run: apk add  curl bash openssh-client rsync tar
+      run: apk add  curl bash openssh-client rsync tar zstd
       shell: sh
 
     - name: Restore Hugo resources
