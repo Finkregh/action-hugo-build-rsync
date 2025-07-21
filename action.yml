@@ -101,14 +101,6 @@ runs:
       run: apk add  curl bash openssh-client rsync tar
       shell: sh
 
-    - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
-      shell: bash
-    - uses: actions/checkout@v4
-      with:
-        path: ${{ github.repository }}
-        submodules: recursive
-        fetch-depth: ${{ inputs.git_checkout_depth }}
-
     - name: Restore Hugo resources
       uses: actions/cache/restore@v4
       with:
