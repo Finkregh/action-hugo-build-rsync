@@ -104,8 +104,9 @@ runs:
 
         HUGO_DOMAIN="${{ inputs.main_domain }}"
         RSYNC_DEST_DIR="${{ inputs.main_rsync_destination_dir }}"
-
-        if "${FORGEJO_EVENT_NAME}" == "pull_request"; then
+        
+        echo event_name=${{ forge.event_name }}
+        if "${{ forge.event_name }}" == "pull_request"; then
           if [ ! -z "${RSYNC_ARGS_PR+x}" ] ; then RSYNC_ARGS=${RSYNC_ARGS_PR} ; fi
           if [ ! -z "${RSYNC_SERVER_PR+x}" ] ; then RSYNC_SERVER=${RSYNC_SERVER_PR} ; fi
           if [ ! -z "${RSYNC_USER_PR+x}" ] ; then RSYNC_USER=${RSYNC_USER_PR} ; fi
@@ -158,7 +159,8 @@ runs:
         echo "${{ inputs.ssh_known_hosts }}" > ~/.ssh/known_hosts
         
         eval $(ssh-agent -s)
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
+        echo "${{ secrets.SSH_PRIVATE_KEY }}"
+        printf "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
         
         set -x
         rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}/"
