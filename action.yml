@@ -35,11 +35,10 @@ inputs:
     description: username for the rsync destination for PR build, defaults to 'main_rsync_user'
     required: false
   main_rsync_rsh:
-    description: Value for 'RSYNC_RSH', e.g. 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'; defaults to 'ssh'
-    default: ssh
+    description: Value for 'RSYNC_RSH', e.g. 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
     required: false
   pr_rsync_rsh:
-    description: Value for 'RSYNC_RSH' for PR builds; defaults to 'main_rsync_rsh', which defaults to 'ssh'
+    description: Value for 'RSYNC_RSH' for PR builds; defaults to 'main_rsync_rsh'
     required: false
   main_rsync_args:
     description: additional rsync arguments, e.g. '--dry-run'
@@ -164,6 +163,7 @@ runs:
         eval $(ssh-agent -s)
         echo '${{ inputs.ssh_secret_key }}' | ssh-add -
         
+        echo rsync_rsh=${RSYNC_RSH}
         set -x
         if [ "${FORGEJO_EVENT_NAME}" == "pull_request" ] ; then
           mv public ${RSYNC_DEST_DIR}
