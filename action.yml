@@ -81,7 +81,7 @@ runs:
     - name: Restore HUGO_CACHEDIR
       uses: actions/cache/restore@v4
       with:
-        path: ${{ input.hugo_cachedir }}
+        path: ${{ inputs.hugo_cachedir }}
         key: hugocachedir-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           hugocachedir-${{ runner.os }}-
@@ -141,7 +141,7 @@ runs:
     - name: Save HUGO_CACHEDIR
       uses: actions/cache/save@v4
       with:
-        path: ${{ input.hugo_cachedir }}
+        path: ${{ inputs.hugo_cachedir }}
         key: hugocachedir-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
 
 
