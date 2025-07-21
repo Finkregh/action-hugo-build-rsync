@@ -113,14 +113,15 @@ runs:
           HUGO_DOMAIN="${{ inputs.pr_subdomain }}-pr-${{ forge.event.pull_request.number }}.${{ inputs.pr_domain }}"
           RSYNC_DEST_DIR="${{ inputs.pr_rsync_destination_basedir }}/${HUGO_DOMAIN}"
         fi
-
-        export HUGO_ARGS RSYNC_ARGS RSYNC_SERVER RSYNC_USER RSYNC_RSH HUGO_DOMAIN RSYNC_DEST_DIR
+        for var in HUGO_ARGS RSYNC_ARGS RSYNC_SERVER RSYNC_USER RSYNC_RSH HUGO_DOMAIN RSYNC_DEST_DIR; do
+            echo ${var}=${!var} >> ${FORGEJO_OUTPUT}
         
     - id: build
       name: Build
       shell: bash
       run: |
         set -euo pipefail
+        echo "${{ steps.set_vars.outputs }}"
         if "${FORGEJO_EVENT_NAME}" == "pull_request"; then
           _PROTO=http
         else
