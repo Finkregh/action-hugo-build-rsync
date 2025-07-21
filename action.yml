@@ -128,7 +128,7 @@ runs:
       run: |
         set -euo pipefail
         echo "${{ steps.set_vars.outputs }}"
-        if "${FORGEJO_EVENT_NAME}" == "pull_request"; then
+        if [ "${FORGEJO_EVENT_NAME}" == "pull_request" ] ; then
           _PROTO=http
         else
           _PROTO=https
