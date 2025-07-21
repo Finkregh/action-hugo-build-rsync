@@ -166,6 +166,7 @@ runs:
         echo rsync_rsh=${RSYNC_RSH}
         set | grep RSYNC
         set | grep HUGO
+        rsync --version
         set -x
         if [ "${FORGEJO_EVENT_NAME}" == "pull_request" ] ; then
           mv public ${RSYNC_DEST_DIR}
