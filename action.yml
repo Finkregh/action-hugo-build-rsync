@@ -37,9 +37,11 @@ inputs:
   main_rsync_rsh:
     description: Value for 'RSYNC_RSH', e.g. 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
     required: false
+    default: "ssh"
   pr_rsync_rsh:
     description: Value for 'RSYNC_RSH' for PR builds; defaults to 'main_rsync_rsh'
     required: false
+    default: "ssh"
   main_rsync_args:
     description: additional rsync arguments, e.g. '--dry-run'
     default: -atv --progress --delete
