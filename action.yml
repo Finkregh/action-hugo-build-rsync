@@ -159,21 +159,18 @@ runs:
 
         mkdir -p ~/.ssh && touch ~/.ssh/known_hosts && chmod -R g=,o= ~/.ssh
         echo "${{ inputs.ssh_known_hosts }}" > ~/.ssh/known_hosts
-        cat ~/.ssh/known_hosts
 
         eval $(ssh-agent -s)
         echo '${{ inputs.ssh_secret_key }}' | ssh-add -
-        ssh-add -l
         
-        set | grep RSYNC
-        set | grep HUGO
         set -x
-        if [ "${FORGEJO_EVENT_NAME}" == "pull_request" ] ; then
-          mv public ${RSYNC_DEST_DIR}
-          rsync ${RSYNC_ARGS} ${RSYNC_DEST_DIR} "${RSYNC_USER}@${RSYNC_SERVER}:"
-        else
-          rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}/"
-        fi
+        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}/"
+        #if [ "${FORGEJO_EVENT_NAME}" == "pull_request" ] ; then
+        #  mv public ${RSYNC_DEST_DIR}
+        #  rsync ${RSYNC_ARGS} ${RSYNC_DEST_DIR} "${RSYNC_USER}@$#{RSYNC_SERVER}:"
+        #else
+        #  rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}/"
+        #fi
           set +x
 
     - name: Link to websiete, add PR comment
