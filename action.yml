@@ -163,6 +163,7 @@ runs:
         eval $(ssh-agent -s)
         echo '${{ inputs.ssh_secret_key }}' | ssh-add -
         
+        set | grep RSYNC
         set -x
         rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}"
         #if [ "${FORGEJO_EVENT_NAME}" == "pull_request" ] ; then
