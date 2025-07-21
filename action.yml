@@ -179,7 +179,7 @@ runs:
         set -euo pipefail
         echo "Build is accesisble at ${{ steps.build.outputs.site_url }}"
 
-        if "${FORGEJO_EVENT_NAME}" == "pull_request"; then
+        if [ "${{ forge.event_name }}" == "pull_request" ]; then
           echo "This is a PR, adding a comment if it hasnt been created yet"
           curl --fail -sS -o /usr/local/bin/forgejo-curl.sh ${{ inputs.forgejo_curl_source }} && chmod +x /usr/local/bin/forgejo-curl.sh
           export PATH=/usr/local/bin:$PATH
