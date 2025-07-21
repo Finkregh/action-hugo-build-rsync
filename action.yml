@@ -114,11 +114,13 @@ runs:
           RSYNC_DEST_DIR="${{ inputs.pr_rsync_destination_basedir }}/${HUGO_DOMAIN}"
         fi
         for var in HUGO_ARGS RSYNC_ARGS RSYNC_SERVER RSYNC_USER RSYNC_RSH HUGO_DOMAIN RSYNC_DEST_DIR; do
-            echo ${var}=${!var} >> ${FORGEJO_OUTPUT}
+          echo ${var}=${!var} >> ${FORGEJO_ENV}
+        done
         
     - id: build
       name: Build
       shell: bash
+
       run: |
         set -euo pipefail
         echo "${{ steps.set_vars.outputs }}"
