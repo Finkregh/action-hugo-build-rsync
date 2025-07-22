@@ -112,7 +112,7 @@ runs:
           if [ ! -z "${RSYNC_SERVER_PR+x}" ] ; then RSYNC_SERVER=${RSYNC_SERVER_PR} ; fi
           if [ ! -z "${RSYNC_USER_PR+x}" ] ; then RSYNC_USER=${RSYNC_USER_PR} ; fi
           if [ ! -z "${RSYNC_RSH_PR+x}" ] ; then RSYNC_RSH=${RSYNC_RSH_PR} ; fi
-          HUGO_DOMAIN="${{ inputs.pr_subdomain }}-pr-$${{ github.event.number }}.${{ inputs.pr_domain }}"
+          HUGO_DOMAIN="${{ inputs.pr_subdomain }}-pr-${{ github.event.number }}.${{ inputs.pr_domain }}"
           RSYNC_DEST_DIR="${{ inputs.pr_rsync_destination_basedir }}${HUGO_DOMAIN}"
         fi
         for var in HUGO_ARGS RSYNC_ARGS RSYNC_SERVER RSYNC_USER RSYNC_RSH HUGO_DOMAIN RSYNC_DEST_DIR; do
@@ -198,10 +198,10 @@ runs:
           export PATH=/usr/local/bin:$PATH
           forgejo-curl.sh --token "${{ env.FORGEJO_TOKEN }}" login ${{ env.FORGEJO_SERVER_URL }}
           forgejo-curl.sh api_json ${{ env.FORGEJO_SERVER_URL }}/api/v1/user
-          if forgejo-curl.sh --verbose api ${{ env.FORGEJO_SERVER_URL }}/api/v1/repos/${{ env.FORGEJO_REPOSITORY }}/issues/$${{ github.event.number }}/comments | grep -q "Website preview" ; then
+          if forgejo-curl.sh --verbose api ${{ env.FORGEJO_SERVER_URL }}/api/v1/repos/${{ env.FORGEJO_REPOSITORY }}/issues/${{ github.event.number }}/comments | grep -q "Website preview" ; then
             echo "Comment already created"
           else
-            forgejo-curl.sh --verbose api_json --data-raw '{"body":"Website preview: ${{ env.HUGO_BASEURL }}"}' ${{ env.FORGEJO_SERVER_URL }}/api/v1/repos/${{ env.FORGEJO_REPOSITORY }}/issues/$${{ github.event.number }}/comments
+            forgejo-curl.sh --verbose api_json --data-raw '{"body":"Website preview: ${{ env.HUGO_BASEURL }}"}' ${{ env.FORGEJO_SERVER_URL }}/api/v1/repos/${{ env.FORGEJO_REPOSITORY }}/issues/${{ github.event.number }}/comments
           fi
           echo "::endgroup::"
         fi
