@@ -160,7 +160,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-
+        set -x
         mkdir -p ~/.ssh && touch ~/.ssh/known_hosts && chmod -R g=,o= ~/.ssh
         echo "${{ inputs.ssh_known_hosts }}" > ~/.ssh/known_hosts
         if ! grep -q ${RSYNC_SERVER} ~/.ssh/known_hosts; then echo "::error::${RSYNC_SERVER} is not in ~/.ssh/known_hosts" ; exit 1 ; fi
