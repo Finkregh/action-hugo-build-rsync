@@ -136,9 +136,9 @@ runs:
 
         echo "::group::Runnning hugo build ${HUGO_ARGS}"
         echo "::notice::base URL is ${HUGO_BASEURL}"
-        echo -e '### Hugo build output\n\n```' > $GITHUB_STEP_SUMMARY 
-        hugo build ${HUGO_ARGS} | tee -a ${GITHUB_STEP_SUMMARY}
-        echo -e '\n```' >> $GITHUB_STEP_SUMMARY 
+        echo -e '### Hugo build output\n\n```' > $FORGEJO_STEP_SUMMARY 
+        hugo build ${HUGO_ARGS} | tee -a ${FORGEJO_STEP_SUMMARY}
+        echo -e '\n```' >> $FORGEJO_STEP_SUMMARY 
 
         echo HUGO_BASEURL="${HUGO_BASEURL}" >> ${FORGEJO_ENV}
         echo "::endgroup::"
@@ -170,16 +170,16 @@ runs:
 
         echo "::group::Runnning rsync"
         _rsync_exit=0
-        echo -e '### Rsync output\n\n```' > $GITHUB_STEP_SUMMARY 
+        echo -e '### Rsync output\n\n```' > $FORGEJO_STEP_SUMMARY 
         set -x
-        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 | tee -a $GITHUB_STEP_SUMMARY || _rsync_exit=$?
+        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 | tee -a $FORGEJO_STEP_SUMMARY || _rsync_exit=$?
         set +x
-        echo -e '\n```\n\n' > $GITHUB_STEP_SUMMARY 
+        echo -e '\n```\n\n' > $FORGEJO_STEP_SUMMARY 
         if [ ! ${_rsync_exit} == 0 ]; then
           echo "::warning::rsync failed with code ${_rsync_exit}, running again with 'RSYNC_RSH={RSYNC_RSH} -v'"
-          echo -e '### Rsync output with RSYNC_RSH appended with -v\n\n```' >> $GITHUB_STEP_SUMMARY 
-          RSYNC_RSH="${RSYNC_RSH} -v" rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 | tee -a $GITHUB_STEP_SUMMARY
-          echo -e '\n```' >> $GITHUB_STEP_SUMMARY 
+          echo -e '### Rsync output with RSYNC_RSH appended with -v\n\n```' >> $FORGEJO_STEP_SUMMARY 
+          RSYNC_RSH="${RSYNC_RSH} -v" rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 | tee -a $FORGEJO_STEP_SUMMARY
+          echo -e '\n```' >> $FORGEJO_STEP_SUMMARY 
           echo "::error::rsync failed with ${_rsync_exit}"
           exit ${_rsync_exit}
         fi
@@ -189,7 +189,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        echo "::notice::Build is accessible at ${{ steps.build.outputs.site_url }}" | tee -a $GITHUB_STEP_SUMMARY
+        echo "::notice::Build is accessible at ${{ steps.build.outputs.site_url }}" | tee -a $FORGEJO_STEP_SUMMARY
 
         if [ "${{ github.event_name }}" == "pull_request" ]; then
           echo "This is a PR, adding a comment if it hasnt been created yet"
