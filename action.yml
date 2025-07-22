@@ -172,9 +172,9 @@ runs:
         _rsync_exit=0
         echo -e '### Rsync output\n\n```' > $FORGEJO_STEP_SUMMARY 
         set -x
-        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 | tee -a $FORGEJO_STEP_SUMMARY || _rsync_exit=$?
+        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 || _rsync_exit=$? | tee -a $FORGEJO_STEP_SUMMARY
         set +x
-        echo -e '\n```\n\n' > $FORGEJO_STEP_SUMMARY 
+        echo -e '\n```\n\n' >> $FORGEJO_STEP_SUMMARY 
         if [ ! ${_rsync_exit} == 0 ]; then
           echo "::warning::rsync failed with code ${_rsync_exit}, running again with 'RSYNC_RSH={RSYNC_RSH} -v'"
           echo -e '### Rsync output with RSYNC_RSH appended with -v\n\n```' >> $FORGEJO_STEP_SUMMARY 
