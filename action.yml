@@ -4,15 +4,15 @@ author: "Oluf Lorenzen <ol+forgejo-action@oluflorenzen.de"
 description: |
   Builds a hugo side and rsyncs the generated files somewhere.
 
-  Expected evironment:
-    - secret: SSH_PRIVATE_KEY
-      used for authentication
-    - d
+  See README.md for details.
 
 inputs:
+  hugo_cachedir:
+    description: Where to point HUGO_CACHEDIR to; should not be changed to allow caching in CI
+    default: "/tmp/hugo_cache"
   hugo_args:
     description: arguments to 'hugo build'
-    default: '--minify'
+    default: "--minify"
   main_domain:
     description: domain used in hugo baseURL for main branch builds
   pr_domain:
@@ -52,13 +52,6 @@ inputs:
     description: content of ssh UserKnownHostsFile, used by rsync; generate by running 'ssh-keyscan hostname'
   ssh_secret_key:
     description: SSH key for rsync
-
-  hugo_cachedir:
-    description: Where to point HUGO_CACHEDIR to; should not be changed to allow caching in CI
-    default: "/tmp/hugo_cache"
-  git_checkout_depth:
-    description: Depth to use when doing the git checkout; defaults to 0
-    default: "0"
   forgejo_curl_source:
     description: where do download the script
     default: "https://git.h.oluflorenzen.de/mirrors/forgejo-curl/raw/branch/main/forgejo-curl.sh"
@@ -72,7 +65,10 @@ runs:
   using: "composite"
   steps:
     - name: Install required packages
-      run: apk add  curl bash openssh-client rsync tar zstd
+      run: |
+        echo "::group::Installting required packages"
+        apk add  curl bash openssh-client rsync tar zstd
+        echo "::endgroup::"
       shell: sh
 
     - name: Restore Hugo resources
@@ -95,6 +91,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
+        echo "::group::Setting variables"
         HUGO_ARGS="${{ inputs.hugo_args }}"
         RSYNC_ARGS="${{ inputs.main_rsync_args }}"
         RSYNC_ARGS_PR="${{ inputs.pr_rsync_args }}"
@@ -121,7 +118,8 @@ runs:
         for var in HUGO_ARGS RSYNC_ARGS RSYNC_SERVER RSYNC_USER RSYNC_RSH HUGO_DOMAIN RSYNC_DEST_DIR; do
           echo ${var}=${!var} >> ${FORGEJO_ENV}
         done
-        
+        echo "::endgroup::"
+
     - id: build
       name: Build
       shell: bash
@@ -136,9 +134,14 @@ runs:
         fi
         export HUGO_BASEURL="${_PROTO}://${HUGO_DOMAIN}"
 
-        echo "base URL is ${HUGO_BASEURL}"
-        hugo build --minify
+        echo "::group::Runnning hugo build ${HUGO_ARGS}"
+        echo "::notice::base URL is ${HUGO_BASEURL}"
+        echo -e '### Hugo build output\n\n```' > $GITHUB_STEP_SUMMARY 
+        hugo build ${HUGO_ARGS} | tee -a ${GITHUB_STEP_SUMMARY}
+        echo -e '\n```' >> $GITHUB_STEP_SUMMARY 
+
         echo HUGO_BASEURL="${HUGO_BASEURL}" >> ${FORGEJO_ENV}
+        echo "::endgroup::"
 
     - name: Save Hugo resources
       uses: actions/cache/save@v4
@@ -152,7 +155,6 @@ runs:
         path: ${{ inputs.hugo_cachedir }}
         key: hugocachedir-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
 
-
     - id: deploy
       name: Deploy with rsync
       shell: bash
@@ -161,30 +163,37 @@ runs:
 
         mkdir -p ~/.ssh && touch ~/.ssh/known_hosts && chmod -R g=,o= ~/.ssh
         echo "${{ inputs.ssh_known_hosts }}" > ~/.ssh/known_hosts
-        if ! grep -q ${RSYNC_SERVER} ~/.ssh/known_hosts ; then echo "[ERROR] ${RSYNC_SERVER} is not in ~/.ssh/known_hosts" ; exit 1 ; fi
+        if [ ! grep -q ${RSYNC_SERVER} ~/.ssh/known_hosts ]; then echo "::error::${RSYNC_SERVER} is not in ~/.ssh/known_hosts" ; exit 1 ; fi
 
         eval $(ssh-agent -s)
         echo '${{ inputs.ssh_secret_key }}' | ssh-add -
-        
-        #set | grep RSYNC
-        set -x
-        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}"
-        #if [ "${FORGEJO_EVENT_NAME}" == "pull_request" ] ; then
-        #  mv public ${RSYNC_DEST_DIR}
-        #  rsync ${RSYNC_ARGS} ${RSYNC_DEST_DIR} "${RSYNC_USER}@$#{RSYNC_SERVER}:"
-        #else
-        #  rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}/"
-        #fi
-          set +x
 
-    - name: Link to websiete, add PR comment
+        echo "::group::Runnning rsync"
+        _rsync_exit=0
+        echo -e '### Rsync output\n\n```' > $GITHUB_STEP_SUMMARY 
+        set -x
+        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 >> $GITHUB_STEP_SUMMARY || _rsync_exit=$?
+        set +x
+        echo -e '\n```\n\n' > $GITHUB_STEP_SUMMARY 
+        if [ ! ${_rsync_exit} == 0 ]; then
+          echo "::warning::rsync failed with code ${_rsync_exit}, running again with 'RSYNC_RSH={RSYNC_RSH} -v'"
+          echo -e '### Rsync output with RSYNC_RSH appended with -v\n\n```' >> $GITHUB_STEP_SUMMARY 
+          RSYNC_RSH="${RSYNC_RSH} -v" rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 >> $GITHUB_STEP_SUMMARY
+          echo -e '\n```' >> $GITHUB_STEP_SUMMARY 
+          echo "::error::rsync failed with ${_rsync_exit}"
+          exit ${_rsync_exit}
+        fi
+        echo "::endgroup::"
+
+    - name: Link to website, add PR comment
       shell: bash
       run: |
         set -euo pipefail
-        echo "Build is accesisble at ${{ steps.build.outputs.site_url }}"
+        echo "::notice::Build is accessible at ${{ steps.build.outputs.site_url }}" | tee -a $GITHUB_STEP_SUMMARY
 
         if [ "${{ forge.event_name }}" == "pull_request" ]; then
           echo "This is a PR, adding a comment if it hasnt been created yet"
+          echo "::group::Creating comment on PR"
           curl --fail -sS -o /usr/local/bin/forgejo-curl.sh ${{ inputs.forgejo_curl_source }} && chmod +x /usr/local/bin/forgejo-curl.sh
           export PATH=/usr/local/bin:$PATH
           forgejo-curl.sh --token "${{ env.FORGEJO_TOKEN }}" login ${{ env.FORGEJO_SERVER_URL }}
@@ -194,7 +203,8 @@ runs:
           else
             forgejo-curl.sh --verbose api_json --data-raw '{"body":"Website preview: ${{ env.HUGO_BASEURL }}"}' ${{ env.FORGEJO_SERVER_URL }}/api/v1/repos/${{ env.FORGEJO_REPOSITORY }}/issues/${{ forge.event.pull_request.number }}/comments
           fi
+          echo "::endgroup::"
         fi
 branding:
-  icon: 'check'
-  color: 'blue'
+  icon: "check"
+  color: "blue"
