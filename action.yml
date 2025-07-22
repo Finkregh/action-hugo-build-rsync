@@ -172,13 +172,13 @@ runs:
         _rsync_exit=0
         echo -e '### Rsync output\n\n```' > $GITHUB_STEP_SUMMARY 
         set -x
-        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 >> $GITHUB_STEP_SUMMARY || _rsync_exit=$?
+        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 | tee -a $GITHUB_STEP_SUMMARY || _rsync_exit=$?
         set +x
         echo -e '\n```\n\n' > $GITHUB_STEP_SUMMARY 
         if [ ! ${_rsync_exit} == 0 ]; then
           echo "::warning::rsync failed with code ${_rsync_exit}, running again with 'RSYNC_RSH={RSYNC_RSH} -v'"
           echo -e '### Rsync output with RSYNC_RSH appended with -v\n\n```' >> $GITHUB_STEP_SUMMARY 
-          RSYNC_RSH="${RSYNC_RSH} -v" rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 >> $GITHUB_STEP_SUMMARY
+          RSYNC_RSH="${RSYNC_RSH} -v" rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 | tee -a $GITHUB_STEP_SUMMARY
           echo -e '\n```' >> $GITHUB_STEP_SUMMARY 
           echo "::error::rsync failed with ${_rsync_exit}"
           exit ${_rsync_exit}
