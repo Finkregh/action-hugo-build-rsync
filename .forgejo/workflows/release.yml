@@ -1,0 +1,39 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, e.g. 0.1.2'
+        required: true
+        type: string
+      generate-changelog:
+        description: 'Use release-notes-assistant?'
+        default: true
+        required: false
+        type: boolean
+      prerelease:
+        description: 'Is it a pre-release?'
+        default: false
+        required: false
+        type: boolean
+      release-notes:
+        description: "Manually set release-notes content"
+        required: false
+        type: string
+
+jobs:
+  upload-release:
+    runs-on: docker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/forgejo-release@v2.6.0
+        with:
+          direction: upload
+          url: ${{ env.FORGEJO_SERVER_URL }}
+          repo: ${{ env.FORGEJO_REPOSITORY }}
+          token: ${{ env.FORGEJO_TOKEN }}
+          release-notes-assistant: ${{ inputs.generate-changelog }}
+          release-notes: ${{ inputs.release-notes }}
+          tag: v${{ inputs.version }}
+          release-dir: dist/release
