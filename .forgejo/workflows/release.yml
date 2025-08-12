@@ -26,7 +26,7 @@ jobs:
   upload-release:
     runs-on: docker
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v4.3.0
       - uses: actions/forgejo-release@v2.6.0
         with:
           direction: upload
