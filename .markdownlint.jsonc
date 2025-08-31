@@ -23,5 +23,5 @@
   "no-trailing-spaces": false,
   "ol-prefix": false,
   "strong-style": false,
-  "ul-indent": false
+  "ul-indent": false,
 }
