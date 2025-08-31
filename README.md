@@ -37,7 +37,7 @@ This can be combined with [rrsync](https://man.archlinux.org/man/rrsync.1) to li
 
 If you add this to your `~/.ssh/authorized_keys` the specified key can only write into `/srv`; [`-munge`](https://man.archlinux.org/man/rsync.1#munge-links) is a security feature that breaks symlinks, that you can not access e.g. files outside of `/srv`.
 
-```
+```text
 command="/usr/bin/rrsync -munge /srv",no-agent-forwarding,no-port-forwarding,no-pty,no-user-rc,no-X11-forwarding ssh-something YOUR KEY HERE
 ```
 
