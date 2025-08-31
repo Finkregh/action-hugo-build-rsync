@@ -47,13 +47,13 @@ I use [caddy](https://caddyserver.com/) with this configuration for the PR build
 
 ```text
 *.development.example.com:80 {
-	root /srv
-	rewrite /{host}{uri}
-	@forbidden {
-		path /.*
-	}
-	respond @forbidden 404
-	file_server
+ root /srv
+ rewrite /{host}{uri}
+ @forbidden {
+  path /.*
+ }
+ respond @forbidden 404
+ file_server
 }
 ```
 
