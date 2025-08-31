@@ -1,52 +1,52 @@
-name: 'Prettier and Markdownlint Action'
-description: 'Run Prettier and Markdownlint, push changes'
+name: "Prettier and Markdownlint Action"
+description: "Run Prettier and Markdownlint, push changes"
 author: "Oluf Lorenzen <ol+forgejo-action@oluflorenzen.de>"
 
 inputs:
   prettier_plugins:
-    description: 'Space-separated list of prettier plugins to install and use'
+    description: "Space-separated list of prettier plugins to install and use"
     required: false
-    default: 'prettier-plugin-toml prettier-plugin-sh prettier-plugin-merge'
-  
+    default: "prettier-plugin-toml prettier-plugin-sh prettier-plugin-merge"
+
   commit_message:
-    description: 'Commit message for linting fixes'
+    description: "Commit message for linting fixes"
     required: false
-    default: 'style: changes from ci'
-  
+    default: "style: changes from ci"
+
   commit_user_name:
-    description: 'Git user name for commits'
+    description: "Git user name for commits"
     required: false
-  
+
   commit_user_email:
-    description: 'Git user email for commits'
+    description: "Git user email for commits"
     required: false
-  
+
   commit_author:
-    description: 'Git commit author'
+    description: "Git commit author"
     required: false
-  
+
   prettier_options:
-    description: 'Additional options to pass to prettier'
+    description: "Additional options to pass to prettier"
     required: false
-    default: '--write .'
-  
+    default: "--write ."
+
   markdownlint_globs:
-    description: 'Glob patterns for markdownlint'
+    description: "Glob patterns for markdownlint"
     required: false
-    default: '**/*.md'
-  
+    default: "**/*.md"
+
   allow_other_plugins:
-    description: 'Allow other prettier plugins'
+    description: "Allow other prettier plugins"
     required: false
-    default: 'true'
-  
+    default: "true"
+
   skip_commit:
-    description: 'Skip committing and pushing changes'
+    description: "Skip committing and pushing changes"
     required: false
-    default: 'false'
+    default: "false"
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Extract branch name
       id: extract_branch
@@ -112,5 +112,5 @@ runs:
         globs: ${{ inputs.markdownlint_globs }}
 
 branding:
-  icon: 'check-circle'
-  color: 'green'
+  icon: "check-circle"
+  color: "green"

@@ -22,26 +22,26 @@ jobs:
       - name: Run Prettier and Markdownlint
         uses: ./action-prettier-markdownlint
         with:
-          prettier_plugins: 'prettier-plugin-toml prettier-plugin-sh prettier-plugin-merge'
-          commit_message: 'style: automated linting fixes'
-          commit_user_name: 'Linting Bot'
-          commit_user_email: 'linting-bot@example.com'
-          commit_author: 'Linting Bot <linting-bot@example.com>'
+          prettier_plugins: "prettier-plugin-toml prettier-plugin-sh prettier-plugin-merge"
+          commit_message: "style: automated linting fixes"
+          commit_user_name: "Linting Bot"
+          commit_user_email: "linting-bot@example.com"
+          commit_author: "Linting Bot <linting-bot@example.com>"
 ```
 
 ## Inputs
 
-| Input | Description | Required | Default |
-|-------|-------------|----------|---------|
-| `prettier_plugins` | Space-separated list of prettier plugins to install and use | No | `prettier-plugin-toml prettier-plugin-sh prettier-plugin-merge` |
-| `commit_message` | Commit message for linting fixes | No | `style: changes from ci` |
-| `commit_user_name` | Git user name for commits | No | _(uses stefanzweifel/git-auto-commit-action default)_ |
-| `commit_user_email` | Git user email for commits | No | _(uses stefanzweifel/git-auto-commit-action default)_ |
-| `commit_author` | Git commit author | No | _(uses stefanzweifel/git-auto-commit-action default)_ |
-| `prettier_options` | Additional options to pass to prettier | No | `--write .` |
-| `markdownlint_globs` | Glob patterns for markdownlint | No | `**/*.md` |
-| `allow_other_plugins` | Allow other prettier plugins | No | `true` |
-| `skip_commit` | Skip committing and pushing changes | No | `false` |
+| Input                 | Description                                                 | Required | Default                                                         |
+| --------------------- | ----------------------------------------------------------- | -------- | --------------------------------------------------------------- |
+| `prettier_plugins`    | Space-separated list of prettier plugins to install and use | No       | `prettier-plugin-toml prettier-plugin-sh prettier-plugin-merge` |
+| `commit_message`      | Commit message for linting fixes                            | No       | `style: changes from ci`                                        |
+| `commit_user_name`    | Git user name for commits                                   | No       | _(uses stefanzweifel/git-auto-commit-action default)_           |
+| `commit_user_email`   | Git user email for commits                                  | No       | _(uses stefanzweifel/git-auto-commit-action default)_           |
+| `commit_author`       | Git commit author                                           | No       | _(uses stefanzweifel/git-auto-commit-action default)_           |
+| `prettier_options`    | Additional options to pass to prettier                      | No       | `--write .`                                                     |
+| `markdownlint_globs`  | Glob patterns for markdownlint                              | No       | `**/*.md`                                                       |
+| `allow_other_plugins` | Allow other prettier plugins                                | No       | `true`                                                          |
+| `skip_commit`         | Skip committing and pushing changes                         | No       | `false`                                                         |
 
 ## Behavior
 
@@ -62,13 +62,13 @@ jobs:
 - name: Custom Lint and Format
   uses: ./action-prettier-markdownlint
   with:
-    prettier_plugins: 'prettier-plugin-yaml prettier-plugin-json'
-    commit_message: 'fix: automated code formatting'
-    commit_user_name: 'Format Bot'
-    commit_user_email: 'format-bot@company.com'
-    commit_author: 'Format Bot <format-bot@company.com>'
-    prettier_options: '--write --tab-width 2 .'
-    markdownlint_globs: 'docs/**/*.md README.md'
+    prettier_plugins: "prettier-plugin-yaml prettier-plugin-json"
+    commit_message: "fix: automated code formatting"
+    commit_user_name: "Format Bot"
+    commit_user_email: "format-bot@company.com"
+    commit_author: "Format Bot <format-bot@company.com>"
+    prettier_options: "--write --tab-width 2 ."
+    markdownlint_globs: "docs/**/*.md README.md"
 ```
 
 ## Example with Skip Commit (Testing/CI)
@@ -77,13 +77,14 @@ jobs:
 - name: Lint and Format (No Commit)
   uses: ./action-prettier-markdownlint
   with:
-    prettier_plugins: 'prettier-plugin-toml prettier-plugin-sh'
-    prettier_options: '--write .'
-    markdownlint_globs: '**/*.md'
-    skip_commit: 'true'  # Only format files, don't commit changes
+    prettier_plugins: "prettier-plugin-toml prettier-plugin-sh"
+    prettier_options: "--write ."
+    markdownlint_globs: "**/*.md"
+    skip_commit: "true" # Only format files, don't commit changes
 ```
 
 This is useful for:
+
 - Testing the action without making commits
 - CI workflows that only want to check formatting
 - Local development workflows where you want to format but handle commits manually
