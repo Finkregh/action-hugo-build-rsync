@@ -1,0 +1,116 @@
+name: 'Prettier and Markdownlint Action'
+description: 'Run Prettier and Markdownlint, push changes'
+author: "Oluf Lorenzen <ol+forgejo-action@oluflorenzen.de>"
+
+inputs:
+  prettier_plugins:
+    description: 'Space-separated list of prettier plugins to install and use'
+    required: false
+    default: 'prettier-plugin-toml prettier-plugin-sh prettier-plugin-merge'
+  
+  commit_message:
+    description: 'Commit message for linting fixes'
+    required: false
+    default: 'style: changes from ci'
+  
+  commit_user_name:
+    description: 'Git user name for commits'
+    required: false
+  
+  commit_user_email:
+    description: 'Git user email for commits'
+    required: false
+  
+  commit_author:
+    description: 'Git commit author'
+    required: false
+  
+  prettier_options:
+    description: 'Additional options to pass to prettier'
+    required: false
+    default: '--write .'
+  
+  markdownlint_globs:
+    description: 'Glob patterns for markdownlint'
+    required: false
+    default: '**/*.md'
+  
+  allow_other_plugins:
+    description: 'Allow other prettier plugins'
+    required: false
+    default: 'true'
+  
+  skip_commit:
+    description: 'Skip committing and pushing changes'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Extract branch name
+      id: extract_branch
+      shell: bash
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+
+    - name: Checkout
+      id: checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: ${{ steps.extract_branch.outputs.branch }}
+
+    - name: Install prettier and plugins
+      shell: bash
+      run: |
+        # Install prettier and the specified plugins
+        npm install prettier ${{ inputs.prettier_plugins }} --save-dev
+
+    - name: Run Prettier
+      uses: https://github.com/Finkregh/prettier_action@3c2ef7889ea1c94462bf8ceaf50fe2b0c6421f8e
+      with:
+        prettier_plugins: ${{ inputs.prettier_plugins }}
+        allow_other_plugins: ${{ inputs.allow_other_plugins }}
+        no_commit: true
+        add_options: "--update"
+        prettier_options: ${{ inputs.prettier_options }}
+
+    - name: Run Markdownlint (non-blocking)
+      uses: https://github.com/DavidAnson/markdownlint-cli2-action@v20
+      continue-on-error: true
+      with:
+        fix: true
+        globs: ${{ inputs.markdownlint_globs }}
+
+    - name: Show Git status and diff
+      shell: bash
+      run: git -c color.ui=always status; git -c color.ui=always diff
+
+    - name: Commit and push linting fixes
+      # Run only on:
+      # - Pull requests OR
+      # - Not on the default branch
+      # AND skip_commit is not true
+      if: >
+        inputs.skip_commit != 'true' && (
+          github.event_name == 'pull_request' ||
+          github.ref_name != github.event.repository.default_branch
+        )
+      uses: https://github.com/stefanzweifel/git-auto-commit-action@v5
+      with:
+        branch: ${{ steps.extract_branch.outputs.branch }}
+        commit_message: ${{ inputs.commit_message }}
+        commit_user_name: ${{ inputs.commit_user_name }}
+        commit_user_email: ${{ inputs.commit_user_email }}
+        commit_author: ${{ inputs.commit_author }}
+        add_options: "--update"
+        status_options: "--untracked-files=no"
+
+    - name: Run Markdownlint (blocking)
+      uses: https://github.com/DavidAnson/markdownlint-cli2-action@v20
+      with:
+        globs: ${{ inputs.markdownlint_globs }}
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
