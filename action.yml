@@ -72,7 +72,7 @@ runs:
       shell: sh
 
     - name: Restore Hugo resources
-      uses: actions/cache/restore@v4.2.4
+      uses: actions/cache/restore@v4.3.0
       with:
         path: ./resources
         key: cache-hugo-resources-
@@ -80,7 +80,7 @@ runs:
           cache-hugo-resources-
 
     - name: Restore HUGO_CACHEDIR
-      uses: actions/cache/restore@v4.2.4
+      uses: actions/cache/restore@v4.3.0
       with:
         path: ${{ inputs.hugo_cachedir }}
         key: hugocachedir-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
@@ -144,13 +144,13 @@ runs:
         echo "::endgroup::"
 
     - name: Save Hugo resources
-      uses: actions/cache/save@v4.2.4
+      uses: actions/cache/save@v4.3.0
       with:
         path: ./resources
         key: cache-hugo-resources-${{ hashFiles('./resources/**/*') }}
 
     - name: Save HUGO_CACHEDIR
-      uses: actions/cache/save@v4.2.4
+      uses: actions/cache/save@v4.3.0
       with:
         path: ${{ inputs.hugo_cachedir }}
         key: hugocachedir-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
