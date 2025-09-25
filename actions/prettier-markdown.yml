@@ -1,0 +1,80 @@
+name: publish
+
+on:
+  #[push, workflow_dispatch]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref:
+            ${{ steps.extract_branch.outputs.branch }}
+            #${{ github.head_ref }}
+
+      - name: install prettier-plugins
+        # workaround for <https://github.com/creyD/prettier_action/issues/111>
+        run: npm install prettier prettier-plugin-toml --save-dev
+
+      - name: Prettier
+        #uses: https://github.com/creyD/prettier_action@v4.6
+        uses: https://github.com/Finkregh/prettier_action@8c18391fdc98ed0d884c6345f03975edac71b8f0
+        with:
+          prettier_plugins: "prettier-plugin-toml"
+          allow_other_plugins: true
+          no_commit: true
+          add_options: "--update"
+          prettier_options: --write .
+
+      - name: debug
+        run: git status
+
+      - name: Markdownlint
+        uses: https://github.com/DavidAnson/markdownlint-cli2-action@v20
+        #uses: https://github.com/Finkregh/prettier_action@fix/no-new-files
+        continue-on-error: true
+        with:
+          fix: true
+          globs: "**/*.md"
+
+      - name: debug
+        run: git diff; git status
+
+      - name: Commit and push linting fixes
+        # Run only on:
+        # - Pull requests
+        # - Not on the default branch
+        #if: >
+        #  github.event_name == 'pull_request' &&
+        #  github.ref_name != github.event.repository.default_branch
+        uses: https://github.com/stefanzweifel/git-auto-commit-action@v6.0.1
+        with:
+          branch: ${{ steps.extract_branch.outputs.branch }}
+          commit_message: "chore: changes from ci"
+          commit_user_name: ci-linting
+          add_options: "--update"
+          # file_pattern: "*"
+          # skip_dirty_check: true
+          status_options: "--untracked-files=no"
+
+      - name: Markdownlint (blocking)
+        uses: https://github.com/DavidAnson/markdownlint-cli2-action@v20
+        with:
+          globs: "**/*.md"
