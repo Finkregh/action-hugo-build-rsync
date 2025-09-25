@@ -9,6 +9,73 @@ on:
       - main
   workflow_dispatch:
 
+	# SPDX-License-Identifier: MIT
+name: "Build hugo site and rsync to destination"
+author: "Oluf Lorenzen <ol+forgejo-action@oluflorenzen.de"
+description: |
+  Builds a hugo side and rsyncs the generated files somewhere.
+
+  See README.md for details.
+
+inputs:
+  hugo_cachedir:
+    description: Where to point HUGO_CACHEDIR to; should not be changed to allow caching in CI
+    default: "/tmp/hugo_cache"
+  hugo_args:
+    description: arguments to 'hugo build'
+    default: "--minify"
+  main_domain:
+    description: domain used in hugo baseURL for main branch builds
+  pr_domain:
+    description: domain used in Hugo baseURL for PR build
+  pr_subdomain:
+    description: subdomain used in Hugo baseURL for PR builds, will be suffixed with pr_basedomain
+  main_rsync_destination_dir:
+    description: rsync destination directory
+  pr_rsync_destination_basedir:
+    description: rsync destination directory for PR buiBASEDOMAINlds, will be suffixed by '/pr_basedomain', needs trailing slash
+    required: false
+  main_rsync_server:
+    description: server name used for rsync destination
+  pr_rsync_server:
+    description: server name used for rsync destination for PR build; defaults to 'main_rsync_server'
+    required: false
+  main_rsync_user:
+    description: username for the rsync destination
+  pr_rsync_user:
+    description: username for the rsync destination for PR build, defaults to 'main_rsync_user'
+    required: false
+  main_rsync_rsh:
+    description: Value for 'RSYNC_RSH', e.g. 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
+    required: false
+    default: "ssh"
+  pr_rsync_rsh:
+    description: Value for 'RSYNC_RSH' for PR builds; defaults to 'main_rsync_rsh'
+    required: false
+    default: "ssh"
+  main_rsync_args:
+    description: additional rsync arguments, e.g. '--dry-run'
+    default: -atv --progress --delete
+  pr_rsync_args:
+    description: additional rsync arguments for PR build; defaults to 'main_rsync_args'
+    required: false
+  ssh_known_hosts:
+    description: content of ssh UserKnownHostsFile, used by rsync; generate by running 'ssh-keyscan hostname'
+  ssh_secret_key:
+    description: SSH key for rsync
+  forgejo_curl_source:
+    description: where do download the script
+    default: "https://git.h.oluflorenzen.de/mirrors/forgejo-curl/raw/branch/main/forgejo-curl.sh"
+
+outputs:
+  site_url:
+    description: "URL to the website build"
+    value: "${{ steps.build.outputs.site_url }}"
+
+runs:
+  using: "composite"
+  steps:
+
 jobs:
   lint:
     name: Linting
