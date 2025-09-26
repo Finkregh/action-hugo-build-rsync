@@ -34,6 +34,10 @@ inputs:
     type: string
   ssh_secret_key:
     type: string
+  main_protocol:
+    type: string
+  pr_protocol:
+    type: string
   forgejo_curl_source:
     type: string
 outputs:

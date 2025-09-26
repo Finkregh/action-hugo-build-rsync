@@ -29,19 +29,27 @@ The domain/folders/etc. are combined from `pr_domain`, `pr_subdomain` and `-pr-{
 
 Example:
 
-`pr_domain: development.example.com` and `pr_subdomain: prod-test` in a PR with the ID `1312` will run with [hugoBaseurl](gohugo.io/methods/site/baseurl/) = <http://prod-test-pr-1312.development.example.com> and rsync the files in `public/` to the directory `prod-test-pr-1312.development.example.com/`.
+- `pr_domain: development.example.com`
+- `pr_subdomain: prod-test`
+- PR ID: `1312`
+- run with [hugoBaseurl](gohugo.io/methods/site/baseurl/) = <http://prod-test-pr-1312.development.example.com> (uses `pr_protocol`, defaults to `http`)
+- rsync the files in `public/` to the directory `prod-test-pr-1312.development.example.com/`
+- create a comment with a link to the build in the PR (once)
 
 ### Branch builds
 
-Branch builds (pushes to non-default branches) work similarly to PR builds but use the branch name instead of PR number. Forward slashes (`/`) in branch names are replaced with underscores (`_`) for domain-safe naming.
+Branch builds (pushes to non-default branches) work similarly to PR builds but use the branch name instead of PR number. Forward slashes (`/`) in branch names are replaced with underscores (`_`).
 
 The domain/folders/etc. are combined from `pr_domain`, `pr_subdomain` and `-branch-{SanitizedBranchName}`.
 
 Example:
 
-`pr_domain: development.example.com` and `pr_subdomain: prod-test` with a branch named `feature/new-component` will run with [hugoBaseurl](gohugo.io/methods/site/baseurl/) = <http://prod-test-branch-feature_new-component.development.example.com> and rsync the files in `public/` to the directory `prod-test-branch-feature_new-component.development.example.com/`.
-
-**Note:** Branch builds do not create PR comments since there is no associated pull request.
+- `pr_domain: development.example.com`
+- `pr_subdomain: prod-test`
+- branch: `feature/new-component`
+- run with [hugoBaseurl](gohugo.io/methods/site/baseurl/) = <http://prod-test-branch-feature_new-component.development.example.com> (uses `pr_protocol`, defaults to `http`)
+- rsync the files in `public/` to the directory `prod-test-branch-feature_new-component.development.example.com/`
+- does not create a PR comment, as there is no associated pull request
 
 ## Server configuration
 
@@ -85,6 +93,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   push:
+    branch: main
   workflow_dispatch:
 
 jobs:
@@ -117,6 +126,8 @@ jobs:
           #pr_rsync_rsh: "ssh"
           #main_rsync_args: "-atv --progress --delete"
           #pr_rsync_args: "-atv --progress --delete"
+          #main_protocol: "https"
+          #pr_protocol: "http"
           ssh_known_hosts: ${{ vars.SSH_KNOWN_HOSTS }}
           ssh_secret_key: ${{ secrets.SSH_PRIVATE_KEY }}
           #forgejo_curl_source: "https://git.h.oluflorenzen.de/mirrors/forgejo-curl/raw/branch/main/forgejo-curl.sh"

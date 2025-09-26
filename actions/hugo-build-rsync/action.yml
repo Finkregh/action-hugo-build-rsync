@@ -53,6 +53,12 @@ inputs:
     description: content of ssh UserKnownHostsFile, used by rsync; generate by running 'ssh-keyscan hostname'
   ssh_secret_key:
     description: SSH key for rsync
+  main_protocol:
+    description: protocol used in hugo baseURL for main branch builds
+    default: "https"
+  pr_protocol:
+    description: protocol used in hugo baseURL for PR and branch builds
+    default: "http"
   forgejo_curl_source:
     description: where do download the script
     default: "https://git.h.oluflorenzen.de/mirrors/forgejo-curl/raw/branch/main/forgejo-curl.sh"
@@ -108,6 +114,7 @@ runs:
         # shellcheck disable=SC2034
         RSYNC_DST_BASEDIR_PR="${{ inputs.pr_rsync_destination_dir}}"
 
+        HTTP_PROTOCOL="${{ inputs.main_protocol }}"
         HUGO_DOMAIN="${{ inputs.main_domain }}"
         RSYNC_DEST_DIR="${{ inputs.main_rsync_destination_dir }}"
 
@@ -131,11 +138,13 @@ runs:
           if [ ! -z "${RSYNC_RSH_PR+x}" ] ; then RSYNC_RSH=${RSYNC_RSH_PR} ; fi
           # Replace '/' with '_' in branch name for domain-safe naming
           BRANCH_NAME_SAFE=$(echo "${{ github.ref_name }}" | sed 's/\//_/g')
+          # shellcheck disable=SC2034
+          HTTP_PROTOCOL="${{ inputs.pr_protocol }}"
           HUGO_DOMAIN="${{ inputs.pr_subdomain }}-branch-${BRANCH_NAME_SAFE}.${{ inputs.pr_domain }}"
           # shellcheck disable=SC2034
           RSYNC_DEST_DIR="${{ inputs.pr_rsync_destination_basedir }}${HUGO_DOMAIN}"
         fi
-        for var in HUGO_ARGS RSYNC_ARGS RSYNC_SERVER RSYNC_USER RSYNC_RSH HUGO_DOMAIN RSYNC_DEST_DIR; do
+        for var in HUGO_ARGS RSYNC_ARGS RSYNC_SERVER RSYNC_USER RSYNC_RSH HTTP_PROTOCOL HUGO_DOMAIN RSYNC_DEST_DIR; do
           echo ${var}=${!var} >> "${FORGEJO_ENV}"
           echo "::notice::${var}=${!var}" >> "$FORGEJO_STEP_SUMMARY"
         done
@@ -149,12 +158,7 @@ runs:
         set -euo pipefail
         echo "${{ steps.set_vars.outputs }}"
         # shellcheck disable=SC2050
-        if [ "${FORGEJO_EVENT_NAME}" == "pull_request" ] || ([ "${FORGEJO_EVENT_NAME}" == "push" ] && [ "${{ github.ref_name }}" != "${{ github.event.repository.default_branch }}" ]); then 
-          _PROTO=http
-        else
-          _PROTO=https
-        fi
-        export HUGO_BASEURL="${_PROTO}://${HUGO_DOMAIN}"
+        export HUGO_BASEURL="${HTTP_PROTOCOL}://${HUGO_DOMAIN}"
 
         echo "::group::Running hugo build ${HUGO_ARGS}"
         echo "::notice::base URL is ${HUGO_BASEURL}"
