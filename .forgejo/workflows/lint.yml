@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Extract branch name
         shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> "$GITHUB_OUTPUT"
         id: extract_branch
 
       - name: Checkout
@@ -23,3 +23,9 @@ jobs:
           ref: ${{ steps.extract_branch.outputs.branch }}
       - name: Markdown and prettier
         uses: ./actions/prettier-markdown
+
+  validate-typings:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: https://github.com/typesafegithub/github-actions-typing@v2.2.1
