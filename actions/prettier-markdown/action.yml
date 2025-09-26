@@ -1,22 +1,11 @@
-name: publish
-
-on:
-  #[push, workflow_dispatch]
-  pull_request:
-    types: [opened, synchronize, reopened]
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-	# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: MIT
 name: "Prettier + Markdownlint"
 author: "Oluf Lorenzen <ol+forgejo-action@oluflorenzen.de"
 description: Prettier + Markdownlint + push changes
 
 runs:
   using: "composite"
-  runs-on: ubuntu-latest
+  #runs-on: ubuntu-latest
   steps:
     - name: Extract branch name
       shell: bash
@@ -76,7 +65,7 @@ runs:
         # skip_dirty_check: true
         status_options: "--untracked-files=no"
 
-      - name: Markdownlint (blocking)
-        uses: https://github.com/DavidAnson/markdownlint-cli2-action@v20
-        with:
-          globs: "**/*.md"
+    - name: Markdownlint (blocking)
+      uses: https://github.com/DavidAnson/markdownlint-cli2-action@v20
+      with:
+        globs: "**/*.md"
