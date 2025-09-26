@@ -31,18 +31,18 @@ A composite GitHub Action that combines version determination using cocogitto, r
       curl -LsSf https://astral.sh/uv/install.sh | sh
       source $HOME/.cargo/env
       uv python install 3.13
-    
+
     # UV Commands
     set_version_command: "uv version"
     build_command: "uv build"
     publish_command: "uv publish -v"
-    
+
     # Environment Variables for UV
     env_vars: |
       UV_PUBLISH_USERNAME=myuser
       UV_PUBLISH_PASSWORD=${{ secrets.PACKAGE_UPLOAD_TOKEN }}
       UV_PUBLISH_URL=https://pypi.org/simple/
-    
+
     # Forgejo Configuration (optional)
     forgejo_server_url: ${{ github.server_url }}
     forgejo_token: ${{ secrets.FORGEJO_TOKEN }}
@@ -58,12 +58,12 @@ A composite GitHub Action that combines version determination using cocogitto, r
     install_build_tools_command: |
       curl -sSL https://install.python-poetry.org | python3 -
       export PATH="$HOME/.local/bin:$PATH"
-    
+
     # Poetry Commands
     set_version_command: "poetry version"
     build_command: "poetry build"
     publish_command: "poetry publish"
-    
+
     # Environment Variables for Poetry
     env_vars: |
       POETRY_PYPI_TOKEN_PYPI=${{ secrets.PYPI_TOKEN }}
@@ -77,12 +77,12 @@ A composite GitHub Action that combines version determination using cocogitto, r
   with:
     # Install Node.js dependencies
     install_build_tools_command: "npm ci"
-    
+
     # npm Commands
     set_version_command: "npm version"
     build_command: "npm run build"
     publish_command: "npm publish"
-    
+
     # Environment Variables for npm
     env_vars: |
       NPM_TOKEN=${{ secrets.NPM_TOKEN }}
@@ -96,11 +96,11 @@ A composite GitHub Action that combines version determination using cocogitto, r
   with:
     # Rust is typically pre-installed, but you could install specific tools
     install_build_tools_command: "rustup update stable"
-    
+
     # Cargo Commands
     build_command: "cargo build --release"
     publish_command: "cargo publish"
-    
+
     # Environment Variables for Cargo
     env_vars: |
       CARGO_REGISTRY_TOKEN=${{ secrets.CARGO_REGISTRY_TOKEN }}
@@ -144,11 +144,11 @@ A composite GitHub Action that combines version determination using cocogitto, r
 
 ## Outputs
 
-| Output    | Description                              |
-| --------- | ---------------------------------------- |
-| `current` | Current version from cocogitto           |
-| `new`     | New version from cocogitto auto bump     |
-| `new_dev` | New development version with _dev suffix |
+| Output    | Description                               |
+| --------- | ----------------------------------------- |
+| `current` | Current version from cocogitto            |
+| `new`     | New version from cocogitto auto bump      |
+| `new_dev` | New development version with \_dev suffix |
 
 ## Environment Variables Format
 
@@ -164,6 +164,7 @@ env_vars: |
 ## Build Tool Examples
 
 ### UV (Python - Fast Package Manager)
+
 ```yaml
 install_build_tools_command: "curl -LsSf https://astral.sh/uv/install.sh | sh && source $HOME/.cargo/env"
 set_version_command: "uv version"
@@ -172,6 +173,7 @@ publish_command: "uv publish -v"
 ```
 
 ### Poetry (Python - Traditional Package Manager)
+
 ```yaml
 install_build_tools_command: "curl -sSL https://install.python-poetry.org | python3 -"
 set_version_command: "poetry version"
@@ -180,6 +182,7 @@ publish_command: "poetry publish"
 ```
 
 ### npm (Node.js)
+
 ```yaml
 install_build_tools_command: "npm ci"
 set_version_command: "npm version"
@@ -188,6 +191,7 @@ publish_command: "npm publish"
 ```
 
 ### Cargo (Rust)
+
 ```yaml
 install_build_tools_command: "rustup update stable"
 build_command: "cargo build --release"
@@ -195,6 +199,7 @@ publish_command: "cargo publish"
 ```
 
 ### Maven (Java)
+
 ```yaml
 install_build_tools_command: "mvn dependency:resolve"
 build_command: "mvn package"
@@ -202,6 +207,7 @@ publish_command: "mvn deploy"
 ```
 
 ### Gradle (Java/Kotlin)
+
 ```yaml
 install_build_tools_command: "./gradlew dependencies"
 build_command: "./gradlew build"
@@ -221,15 +227,15 @@ publish_command: "./gradlew publish"
       curl -LsSf https://astral.sh/uv/install.sh | sh
       source $HOME/.cargo/env
       npm install -g @semantic-release/changelog
-    
+
     set_version_command: "uv version"
-    
+
     build_command: |
       # Multi-step build
       uv build
       npm run build:docs
       tar -czf dist/package.tar.gz dist/
-    
+
     publish_command: |
       # Publish to multiple registries
       uv publish -v

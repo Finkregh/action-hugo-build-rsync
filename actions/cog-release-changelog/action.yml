@@ -4,29 +4,29 @@ name: "Cocogitto Release and Changelog with Build Tools"
 author: "Oluf Lorenzen <ol+forgejo-action@oluflorenzen.de>"
 description: |
   Determines versions using cocogitto, creates releases, and optionally builds/publishes packages using custom commands.
-  
+
   This composite action combines version determination, release creation, and optional package management.
   All build tool commands (install, version, build, publish) can be customized through input parameters.
 
 inputs:
   # Build Tool Installation
   install_build_tools_command:
-    description: 'Command to install build tools and dependencies. Leave empty to skip installation.'
+    description: "Command to install build tools and dependencies. Leave empty to skip installation."
     required: false
-  
+
   # Build Tool Commands
   set_version_command:
-    description: 'Command to set package version. Leave empty to skip version setting.'
+    description: "Command to set package version. Leave empty to skip version setting."
     required: false
-  
+
   build_command:
-    description: 'Command to build package. Leave empty to skip building.'
+    description: "Command to build package. Leave empty to skip building."
     required: false
-  
+
   publish_command:
-    description: 'Command to publish package. Leave empty to skip publishing.'
+    description: "Command to publish package. Leave empty to skip publishing."
     required: false
-  
+
   # Environment Variables
   env_vars:
     description: |
@@ -36,14 +36,14 @@ inputs:
       UV_PUBLISH_PASSWORD=mypass
       UV_PUBLISH_URL=https://example.com/pypi
     required: false
-  
+
   # Forgejo/Git Configuration
   forgejo_server_url:
-    description: 'Forgejo server URL for API calls'
+    description: "Forgejo server URL for API calls"
     required: false
-  
+
   forgejo_token:
-    description: 'Forgejo API token'
+    description: "Forgejo API token"
     required: false
 
 outputs:
