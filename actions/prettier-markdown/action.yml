@@ -3,13 +3,19 @@ name: "Prettier + Markdownlint"
 author: "Oluf Lorenzen <ol+forgejo-action@oluflorenzen.de"
 description: Prettier + Markdownlint + push changes
 
+inputs:
+  prettier_plugins:
+    description: 'Additional prettier plugins to install, space-separated, e.g. "prettier-plugin-toml prettier-plugin-sh prettier-plugin-merge"'
+    required: false
+    default: 'prettier-plugin-toml prettier-plugin-sh prettier-plugin-merge'
+
 runs:
   using: "composite"
   #runs-on: ubuntu-latest
   steps:
     - name: Extract branch name
       shell: bash
-      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> "$GITHUB_OUTPUT"
       id: extract_branch
 
     - name: Checkout
@@ -21,8 +27,23 @@ runs:
           ${{ steps.extract_branch.outputs.branch }}
 
     - name: install prettier-plugins
+      shell: bash
       # workaround for <https://github.com/creyD/prettier_action/issues/111>
-      run: npm install prettier prettier-plugin-toml --save-dev
+      run: |
+        echo "::group::Install prettier plugins"
+        npm install prettier --save-dev
+        # shellcheck disable=SC2157
+        if [ -z "${{ inputs.prettier_plugins }}" ]; then
+          echo "No additional prettier plugins specified."
+        else
+          echo "Installing additional prettier plugins: ${{ inputs.prettier_plugins }}"
+          # shellcheck disable=SC2043
+          for plugin in ${{ inputs.prettier_plugins }}; do
+            echo "Installing plugin: $plugin"
+            npm install "$plugin" --save-dev
+          done
+        fi
+        echo "::endgroup::"
 
     - name: Prettier
       #uses: https://github.com/creyD/prettier_action@v4.6
@@ -34,9 +55,6 @@ runs:
         add_options: "--update"
         prettier_options: --write .
 
-    - name: debug
-      run: git status
-
     - name: Markdownlint
       uses: https://github.com/DavidAnson/markdownlint-cli2-action@v20
       continue-on-error: true
@@ -44,8 +62,12 @@ runs:
         fix: true
         globs: "**/*.md"
 
-    - name: debug
-      run: git diff; git status
+    - name: Git diff and status
+      shell: sh
+      run: |
+        echo "::group::Git diff and status"
+        git -c color.ui=always status; git -c color.ui=always diff
+        echo "::endgroup::"
 
     - name: Commit and push linting fixes
       # Run only on:
