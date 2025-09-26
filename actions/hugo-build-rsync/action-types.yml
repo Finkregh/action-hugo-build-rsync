@@ -1,3 +1,4 @@
+---
 inputs:
   hugo_cachedir:
     type: string
