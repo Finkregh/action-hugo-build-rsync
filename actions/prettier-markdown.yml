@@ -10,136 +10,71 @@ on:
   workflow_dispatch:
 
 	# SPDX-License-Identifier: MIT
-name: "Build hugo site and rsync to destination"
+name: "Prettier + Markdownlint"
 author: "Oluf Lorenzen <ol+forgejo-action@oluflorenzen.de"
-description: |
-  Builds a hugo side and rsyncs the generated files somewhere.
-
-  See README.md for details.
-
-inputs:
-  hugo_cachedir:
-    description: Where to point HUGO_CACHEDIR to; should not be changed to allow caching in CI
-    default: "/tmp/hugo_cache"
-  hugo_args:
-    description: arguments to 'hugo build'
-    default: "--minify"
-  main_domain:
-    description: domain used in hugo baseURL for main branch builds
-  pr_domain:
-    description: domain used in Hugo baseURL for PR build
-  pr_subdomain:
-    description: subdomain used in Hugo baseURL for PR builds, will be suffixed with pr_basedomain
-  main_rsync_destination_dir:
-    description: rsync destination directory
-  pr_rsync_destination_basedir:
-    description: rsync destination directory for PR buiBASEDOMAINlds, will be suffixed by '/pr_basedomain', needs trailing slash
-    required: false
-  main_rsync_server:
-    description: server name used for rsync destination
-  pr_rsync_server:
-    description: server name used for rsync destination for PR build; defaults to 'main_rsync_server'
-    required: false
-  main_rsync_user:
-    description: username for the rsync destination
-  pr_rsync_user:
-    description: username for the rsync destination for PR build, defaults to 'main_rsync_user'
-    required: false
-  main_rsync_rsh:
-    description: Value for 'RSYNC_RSH', e.g. 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
-    required: false
-    default: "ssh"
-  pr_rsync_rsh:
-    description: Value for 'RSYNC_RSH' for PR builds; defaults to 'main_rsync_rsh'
-    required: false
-    default: "ssh"
-  main_rsync_args:
-    description: additional rsync arguments, e.g. '--dry-run'
-    default: -atv --progress --delete
-  pr_rsync_args:
-    description: additional rsync arguments for PR build; defaults to 'main_rsync_args'
-    required: false
-  ssh_known_hosts:
-    description: content of ssh UserKnownHostsFile, used by rsync; generate by running 'ssh-keyscan hostname'
-  ssh_secret_key:
-    description: SSH key for rsync
-  forgejo_curl_source:
-    description: where do download the script
-    default: "https://git.h.oluflorenzen.de/mirrors/forgejo-curl/raw/branch/main/forgejo-curl.sh"
-
-outputs:
-  site_url:
-    description: "URL to the website build"
-    value: "${{ steps.build.outputs.site_url }}"
+description: Prettier + Markdownlint + push changes
 
 runs:
   using: "composite"
+  runs-on: ubuntu-latest
   steps:
+    - name: Extract branch name
+      shell: bash
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      id: extract_branch
 
-jobs:
-  lint:
-    name: Linting
-    runs-on: ubuntu-latest
+    - name: Checkout
+      id: checkout
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+        ref:
+          ${{ steps.extract_branch.outputs.branch }}
+          #${{ github.head_ref }}
 
-    steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: extract_branch
+    - name: install prettier-plugins
+      # workaround for <https://github.com/creyD/prettier_action/issues/111>
+      run: npm install prettier prettier-plugin-toml --save-dev
 
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-          ref:
-            ${{ steps.extract_branch.outputs.branch }}
-            #${{ github.head_ref }}
+    - name: Prettier
+      #uses: https://github.com/creyD/prettier_action@v4.6
+      uses: https://github.com/creyD/prettier_action@dev
+      with:
+        prettier_plugins: "prettier-plugin-toml"
+        allow_other_plugins: true
+        no_commit: true
+        add_options: "--update"
+        prettier_options: --write .
 
-      - name: install prettier-plugins
-        # workaround for <https://github.com/creyD/prettier_action/issues/111>
-        run: npm install prettier prettier-plugin-toml --save-dev
+    - name: debug
+      run: git status
 
-      - name: Prettier
-        #uses: https://github.com/creyD/prettier_action@v4.6
-        uses: https://github.com/Finkregh/prettier_action@8c18391fdc98ed0d884c6345f03975edac71b8f0
-        with:
-          prettier_plugins: "prettier-plugin-toml"
-          allow_other_plugins: true
-          no_commit: true
-          add_options: "--update"
-          prettier_options: --write .
+    - name: Markdownlint
+      uses: https://github.com/DavidAnson/markdownlint-cli2-action@v20
+      continue-on-error: true
+      with:
+        fix: true
+        globs: "**/*.md"
 
-      - name: debug
-        run: git status
+    - name: debug
+      run: git diff; git status
 
-      - name: Markdownlint
-        uses: https://github.com/DavidAnson/markdownlint-cli2-action@v20
-        #uses: https://github.com/Finkregh/prettier_action@fix/no-new-files
-        continue-on-error: true
-        with:
-          fix: true
-          globs: "**/*.md"
-
-      - name: debug
-        run: git diff; git status
-
-      - name: Commit and push linting fixes
-        # Run only on:
-        # - Pull requests
-        # - Not on the default branch
-        #if: >
-        #  github.event_name == 'pull_request' &&
-        #  github.ref_name != github.event.repository.default_branch
-        uses: https://github.com/stefanzweifel/git-auto-commit-action@v6.0.1
-        with:
-          branch: ${{ steps.extract_branch.outputs.branch }}
-          commit_message: "chore: changes from ci"
-          commit_user_name: ci-linting
-          add_options: "--update"
-          # file_pattern: "*"
-          # skip_dirty_check: true
-          status_options: "--untracked-files=no"
+    - name: Commit and push linting fixes
+      # Run only on:
+      # - Pull requests
+      # - Not on the default branch
+      #if: >
+      #  github.event_name == 'pull_request' &&
+      #  github.ref_name != github.event.repository.default_branch
+      uses: https://github.com/stefanzweifel/git-auto-commit-action@v6.0.1
+      with:
+        branch: ${{ steps.extract_branch.outputs.branch }}
+        commit_message: "chore: changes from ci"
+        commit_user_name: ci-linting
+        add_options: "--update"
+        # file_pattern: "*"
+        # skip_dirty_check: true
+        status_options: "--untracked-files=no"
 
       - name: Markdownlint (blocking)
         uses: https://github.com/DavidAnson/markdownlint-cli2-action@v20
