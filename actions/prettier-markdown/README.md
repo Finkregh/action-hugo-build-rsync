@@ -33,7 +33,6 @@ on:
     types: [opened, synchronize, reopened]
   push:
     branches:
-    
 
 jobs:
   format-and-lint:

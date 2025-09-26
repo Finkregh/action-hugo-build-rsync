@@ -124,6 +124,7 @@ runs:
           if [ ! -z "${RSYNC_SERVER_PR+x}" ] ; then RSYNC_SERVER=${RSYNC_SERVER_PR} ; fi
           if [ ! -z "${RSYNC_USER_PR+x}" ] ; then RSYNC_USER=${RSYNC_USER_PR} ; fi
           if [ ! -z "${RSYNC_RSH_PR+x}" ] ; then RSYNC_RSH=${RSYNC_RSH_PR} ; fi
+          HTTP_PROTOCOL="${{ inputs.pr_protocol }}"
           HUGO_DOMAIN="${{ inputs.pr_subdomain }}-pr-${{ github.event.number }}.${{ inputs.pr_domain }}"
           RSYNC_DEST_DIR="${{ inputs.pr_rsync_destination_basedir }}${HUGO_DOMAIN}"
         elif [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref_name }}" != "${{ github.event.repository.default_branch }}" ]; then

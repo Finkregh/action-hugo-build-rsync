@@ -12,13 +12,13 @@
   // MD003/heading-style/header-style - Heading style
   "MD003": {
     // `# heading` instead of `heading\n======`
-    "style": "atx"
+    "style": "atx",
   },
   // MD004/ul-style - Unordered list style
   // no preference for now as long as we keep them the same
   "MD004": {
     // List style
-    "style": "consistent"
+    "style": "consistent",
   },
   // MD005/list-indent - Inconsistent indentation for list items at the same level
   "MD005": true,
@@ -31,7 +31,7 @@
     // Whether to indent the first level of the list
     "start_indented": false,
     // Spaces for first level indent (when start_indented is set)
-    "start_indent": 2
+    "start_indent": 2,
   },
   // MD009/no-trailing-spaces - Trailing spaces
   "MD009": {
@@ -40,7 +40,7 @@
     // Allow spaces for empty lines in list items
     "list_item_empty_lines": false,
     // Include unnecessary breaks
-    "strict": false
+    "strict": false,
   },
   // MD010/no-hard-tabs - Hard tabs
   "MD010": {
@@ -49,14 +49,14 @@
     // Fenced code languages to ignore
     "ignore_code_languages": [],
     // Number of spaces for each hard tab
-    "spaces_per_tab": 2
+    "spaces_per_tab": 2,
   },
   // MD011/no-reversed-links - Reversed link syntax
   "MD011": true,
   // MD012/no-multiple-blanks - Multiple consecutive blank lines
   "MD012": {
     // Consecutive blank lines
-    "maximum": 1
+    "maximum": 1,
   },
   // MD013/line-length - Line length
   // disabled, requires autoformatter
@@ -77,7 +77,7 @@
     // Blank lines above heading
     "lines_above": 1,
     // Blank lines below heading
-    "lines_below": 1
+    "lines_below": 1,
   },
   // MD023/heading-start-left/header-start-left - Headings must start at the beginning of the line
   "MD023": true,
@@ -86,19 +86,19 @@
     // Only check sibling headings
     "allow_different_nesting": false,
     // Only check sibling headings
-    "siblings_only": false
+    "siblings_only": false,
   },
   // MD025/single-title/single-h1 - Multiple top-level headings in the same document
   "MD025": {
     // Heading level
     "level": 1,
     // RegExp for matching title in front matter
-    "front_matter_title": "^\\s*title\\s*[:=]"
+    "front_matter_title": "^\\s*title\\s*[:=]",
   },
   // MD026/no-trailing-punctuation - Trailing punctuation in heading
   "MD026": {
     // Punctuation characters
-    "punctuation": ".,;:!。，；：！"
+    "punctuation": ".,;:!。，；：！",
   },
   // MD027/no-multiple-space-blockquote - Multiple spaces after blockquote symbol
   "MD027": true,
@@ -107,7 +107,7 @@
   // MD029/ol-prefix - Ordered list item prefix
   "MD029": {
     // List style
-    "style": "one_or_ordered"
+    "style": "one_or_ordered",
   },
   // MD030/list-marker-space - Spaces after list markers
   "MD030": {
@@ -118,19 +118,19 @@
     // Spaces for multi-line unordered list items
     "ul_multi": 1,
     // Spaces for multi-line ordered list items
-    "ol_multi": 1
+    "ol_multi": 1,
   },
   // MD031/blanks-around-fences - Fenced code blocks should be surrounded by blank lines
   "MD031": {
     // Include list items
-    "list_items": true
+    "list_items": true,
   },
   // MD032/blanks-around-lists - Lists should be surrounded by blank lines
   "MD032": true,
   // MD033/no-inline-html - Inline HTML
   "MD033": {
     // Allowed elements
-    "allowed_elements": ["svg", "div", "span", "br", "a"]
+    "allowed_elements": ["svg", "div", "span", "br", "a"],
   },
   // MD034/no-bare-urls - Bare URL used
   // # dont use `http://...` instead `<http://...>`
@@ -138,12 +138,12 @@
   // MD035/hr-style - Horizontal rule style
   // # set to something unusual as they should not be used at all. Please use headings to structure your document
   "MD035": {
-    "style": "0000000000"
+    "style": "0000000000",
   },
   // MD036/no-emphasis-as-heading/no-emphasis-as-header - Emphasis used instead of a heading
   "MD036": {
     // Punctuation characters
-    "punctuation": ".,;:!?。，；：！？"
+    "punctuation": ".,;:!?。，；：！？",
   },
   // MD037/no-space-in-emphasis - Spaces inside emphasis markers
   "MD037": true,
@@ -156,14 +156,14 @@
     // List of languages
     "allowed_languages": [],
     // Require language only
-    "language_only": false
+    "language_only": false,
   },
   // MD041/first-line-heading/first-line-h1 - First line in a file should be a top-level heading
   "MD041": {
     // Heading level
     "level": 1,
     // RegExp for matching title in front matter
-    "front_matter_title": "^\\s*title\\s*[:=]"
+    "front_matter_title": "^\\s*title\\s*[:=]",
   },
   // MD042/no-empty-links - No empty links
   "MD042": true,
@@ -183,27 +183,27 @@
     // Include code blocks
     "code_blocks": true,
     // Include HTML elements
-    "html_elements": true
+    "html_elements": true,
   },
   // MD045/no-alt-text - Images should have alternate text (alt text)
   "MD045": true,
   // MD046/code-block-style - Code block style
   "MD046": {
-    "style": "consistent"
+    "style": "consistent",
   },
   // MD047/single-trailing-newline - Files should end with a single newline character
   "MD047": true,
   // MD048/code-fence-style - Code fence style
   "MD048": {
-    "style": "consistent"
+    "style": "consistent",
   },
   // MD049/emphasis-style - Emphasis style should be consistent
   "MD049": {
-    "style": "consistent"
+    "style": "consistent",
   },
   // MD050/strong-style - Strong style should be consistent
   "MD050": {
-    "style": "consistent"
+    "style": "consistent",
   },
   // MD051/link-fragments - Link fragments should be valid
   "MD051": true,
@@ -212,7 +212,7 @@
   // MD053/link-image-reference-definitions - Link and image reference definitions should be needed
   "MD053": {
     // Ignored definitions
-    "ignored_definitions": ["//"]
+    "ignored_definitions": ["//"],
   },
 
   // Disable rules that may conflict with Prettier
@@ -238,6 +238,6 @@
   "no-trailing-spaces": false,
   "ol-prefix": false,
   "strong-style": false,
-  "ul-indent": false
+  "ul-indent": false,
   // END Disables rules that may conflict with Prettier
 }
