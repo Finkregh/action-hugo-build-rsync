@@ -33,6 +33,19 @@ Combines version determination using cocogitto, release creation, and optional p
 
 [📖 Full Documentation](actions/cog-release-changelog/README.md)
 
+### Cocogitto PR Changelog (`actions/cog-pr-changelog`)
+
+Generates a changelog using cocogitto and posts it as a comment to Pull Requests, with automatic comment updating.
+
+- Changelog generation from conventional commits using cocogitto
+- Automatic PR comment posting and updating
+- Customizable comment header and footer
+- Configurable changelog generation options
+- Works with Forgejo and GitHub
+- Prevents duplicate comments by updating existing ones
+
+[📖 Full Documentation](actions/cog-pr-changelog/README.md)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
