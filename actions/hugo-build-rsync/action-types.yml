@@ -1,0 +1,45 @@
+---
+inputs:
+  hugo_cachedir:
+    type: string
+  hugo_args:
+    type: string
+  main_domain:
+    type: string
+  pr_domain:
+    type: string
+  pr_subdomain:
+    type: string
+  main_rsync_destination_dir:
+    type: string
+  pr_rsync_destination_basedir:
+    type: string
+  main_rsync_server:
+    type: string
+  pr_rsync_server:
+    type: string
+  main_rsync_user:
+    type: string
+  pr_rsync_user:
+    type: string
+  main_rsync_rsh:
+    type: string
+  pr_rsync_rsh:
+    type: string
+  main_rsync_args:
+    type: string
+  pr_rsync_args:
+    type: string
+  ssh_known_hosts:
+    type: string
+  ssh_secret_key:
+    type: string
+  main_protocol:
+    type: string
+  pr_protocol:
+    type: string
+  forgejo_curl_source:
+    type: string
+outputs:
+  site_url:
+    type: string

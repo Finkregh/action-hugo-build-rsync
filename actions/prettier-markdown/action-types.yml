@@ -1,0 +1,4 @@
+---
+inputs:
+  prettier_plugins:
+    type: string

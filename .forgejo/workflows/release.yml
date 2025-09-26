@@ -4,16 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release, e.g. 0.1.2'
+        description: "Version to release, e.g. 0.1.2"
         required: true
         type: string
       generate-changelog:
-        description: 'Use release-notes-assistant?'
+        description: "Use release-notes-assistant?"
         default: true
         required: false
         type: boolean
       prerelease:
-        description: 'Is it a pre-release?'
+        description: "Is it a pre-release?"
         default: false
         required: false
         type: boolean
