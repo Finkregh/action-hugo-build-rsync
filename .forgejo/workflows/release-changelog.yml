@@ -1,0 +1,22 @@
+name: release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> "$GITHUB_OUTPUT"
+        id: extract_branch
+
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.extract_branch.outputs.branch }}
+      - name: Generate release with changelog
+        uses: ./actions/cog-release-changelog
