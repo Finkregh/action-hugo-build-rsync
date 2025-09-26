@@ -23,7 +23,7 @@ inputs:
   main_rsync_destination_dir:
     description: rsync destination directory
   pr_rsync_destination_basedir:
-    description: rsync destination directory for PR buiBASEDOMAINlds, will be suffixed by '/pr_basedomain', needs trailing slash
+    description: rsync destination directory for PR builds, will be suffixed by '/pr_basedomain', needs trailing slash
     required: false
   main_rsync_server:
     description: server name used for rsync destination
@@ -93,7 +93,8 @@ runs:
       run: |
         set -euo pipefail
         echo "::group::Setting variables"
-        HUGO_ARGS="${{ inputs.hugo_args }}"
+        # shellcheck disable=SC2034
+        HUGO_ARGS="${{ inputs.hugo_args }}" 
         RSYNC_ARGS="${{ inputs.main_rsync_args }}"
         RSYNC_ARGS_PR="${{ inputs.pr_rsync_args }}"
         RSYNC_SERVER="${{ inputs.main_rsync_server }}"
@@ -102,12 +103,15 @@ runs:
         RSYNC_USER_PR="${{ inputs.pr_rsync_user }}"
         RSYNC_RSH="${{ inputs.main_rsync_rsh}}"
         RSYNC_RSH_PR="${{ inputs.pr_rsync_rsh}}"
+        # shellcheck disable=SC2034
         RSYNC_DST_BASEDIR="${{ inputs.main_rsync_destination_dir }}"
+        # shellcheck disable=SC2034
         RSYNC_DST_BASEDIR_PR="${{ inputs.pr_rsync_destination_dir}}"
 
         HUGO_DOMAIN="${{ inputs.main_domain }}"
         RSYNC_DEST_DIR="${{ inputs.main_rsync_destination_dir }}"
 
+        # shellcheck disable=SC2050
         if [ "${{ github.event_name }}" == "pull_request" ]; then
           if [ ! -z "${RSYNC_ARGS_PR+x}" ] ; then RSYNC_ARGS=${RSYNC_ARGS_PR} ; fi
           if [ ! -z "${RSYNC_SERVER_PR+x}" ] ; then RSYNC_SERVER=${RSYNC_SERVER_PR} ; fi
@@ -115,9 +119,25 @@ runs:
           if [ ! -z "${RSYNC_RSH_PR+x}" ] ; then RSYNC_RSH=${RSYNC_RSH_PR} ; fi
           HUGO_DOMAIN="${{ inputs.pr_subdomain }}-pr-${{ github.event.number }}.${{ inputs.pr_domain }}"
           RSYNC_DEST_DIR="${{ inputs.pr_rsync_destination_basedir }}${HUGO_DOMAIN}"
+        elif [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref_name }}" != "${{ github.event.repository.default_branch }}" ]; then
+          # Handle push to non-default branch - use PR-like configuration but with branch name
+          # shellcheck disable=SC2034
+          if [ ! -z "${RSYNC_ARGS_PR+x}" ] ; then RSYNC_ARGS=${RSYNC_ARGS_PR} ; fi
+          # shellcheck disable=SC2034
+          if [ ! -z "${RSYNC_SERVER_PR+x}" ] ; then RSYNC_SERVER=${RSYNC_SERVER_PR} ; fi
+          # shellcheck disable=SC2034
+          if [ ! -z "${RSYNC_USER_PR+x}" ] ; then RSYNC_USER=${RSYNC_USER_PR} ; fi
+          # shellcheck disable=SC2034
+          if [ ! -z "${RSYNC_RSH_PR+x}" ] ; then RSYNC_RSH=${RSYNC_RSH_PR} ; fi
+          # Replace '/' with '_' in branch name for domain-safe naming
+          BRANCH_NAME_SAFE=$(echo "${{ github.ref_name }}" | sed 's/\//_/g')
+          HUGO_DOMAIN="${{ inputs.pr_subdomain }}-branch-${BRANCH_NAME_SAFE}.${{ inputs.pr_domain }}"
+          # shellcheck disable=SC2034
+          RSYNC_DEST_DIR="${{ inputs.pr_rsync_destination_basedir }}${HUGO_DOMAIN}"
         fi
         for var in HUGO_ARGS RSYNC_ARGS RSYNC_SERVER RSYNC_USER RSYNC_RSH HUGO_DOMAIN RSYNC_DEST_DIR; do
-          echo ${var}=${!var} >> ${FORGEJO_ENV}
+          echo ${var}=${!var} >> "${FORGEJO_ENV}"
+          echo "::notice::${var}=${!var}" >> "$FORGEJO_STEP_SUMMARY"
         done
         echo "::endgroup::"
 
@@ -128,20 +148,22 @@ runs:
       run: |
         set -euo pipefail
         echo "${{ steps.set_vars.outputs }}"
-        if [ "${FORGEJO_EVENT_NAME}" == "pull_request" ] ; then
+        # shellcheck disable=SC2050
+        if [ "${FORGEJO_EVENT_NAME}" == "pull_request" ] || ([ "${FORGEJO_EVENT_NAME}" == "push" ] && [ "${{ github.ref_name }}" != "${{ github.event.repository.default_branch }}" ]); then 
           _PROTO=http
         else
           _PROTO=https
         fi
         export HUGO_BASEURL="${_PROTO}://${HUGO_DOMAIN}"
 
-        echo "::group::Runnning hugo build ${HUGO_ARGS}"
+        echo "::group::Running hugo build ${HUGO_ARGS}"
         echo "::notice::base URL is ${HUGO_BASEURL}"
-        echo -e '### Hugo build output\n\n```' > $FORGEJO_STEP_SUMMARY 
-        hugo build ${HUGO_ARGS} | tee -a ${FORGEJO_STEP_SUMMARY}
-        echo -e '\n```' >> $FORGEJO_STEP_SUMMARY 
+        echo -e '### Hugo build output\n\n```' > "$FORGEJO_STEP_SUMMARY"
+        # shellcheck disable=SC2086
+        hugo build ${HUGO_ARGS} | tee -a "${FORGEJO_STEP_SUMMARY}"
+        echo -e '\n```' >> "$FORGEJO_STEP_SUMMARY"
 
-        echo HUGO_BASEURL="${HUGO_BASEURL}" >> ${FORGEJO_ENV}
+        echo HUGO_BASEURL="${HUGO_BASEURL}" >> "${FORGEJO_ENV}"
         echo "::endgroup::"
 
     - name: Save Hugo resources
@@ -164,23 +186,23 @@ runs:
 
         mkdir -p ~/.ssh && touch ~/.ssh/known_hosts && chmod -R g=,o= ~/.ssh
         echo "${{ inputs.ssh_known_hosts }}" > ~/.ssh/known_hosts
-        if ! grep -q ${RSYNC_SERVER} ~/.ssh/known_hosts; then echo "::error::${RSYNC_SERVER} is not in ~/.ssh/known_hosts" ; exit 1 ; fi
+        if ! grep -q "${RSYNC_SERVER}" ~/.ssh/known_hosts; then echo "::error::${RSYNC_SERVER} is not in ~/.ssh/known_hosts" ; exit 1 ; fi
 
-        eval $(ssh-agent -s)
+        eval "$(ssh-agent -s)"
         echo '${{ inputs.ssh_secret_key }}' | ssh-add -
 
-        echo "::group::Runnning rsync"
+        echo "::group::Running rsync"
         _rsync_exit=0
-        echo -e '### Rsync output\n\n```' > $FORGEJO_STEP_SUMMARY 
+        echo -e '### Rsync output\n\n```' > "$FORGEJO_STEP_SUMMARY"
         set -x
-        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" || _rsync_exit=$? | tee -a $FORGEJO_STEP_SUMMARY
+        rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" 2>&1 | tee -a "$FORGEJO_STEP_SUMMARY" || _rsync_exit=${PIPESTATUS[0]}
         set +x
-        echo -e '\n```\n\n' >> $FORGEJO_STEP_SUMMARY 
-        if [ ! ${_rsync_exit} == 0 ]; then
+        echo -e '\n```\n\n' >> "$FORGEJO_STEP_SUMMARY"
+        if [ ! "${_rsync_exit}" == 0 ]; then
           echo "::warning::rsync failed with code ${_rsync_exit}, running again with 'RSYNC_RSH={RSYNC_RSH} -v'"
-          echo -e '### Rsync output with RSYNC_RSH appended with -v\n\n```' >> $FORGEJO_STEP_SUMMARY 
-          RSYNC_RSH="${RSYNC_RSH} -v" rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" | tee -a $FORGEJO_STEP_SUMMARY
-          echo -e '\n```' >> $FORGEJO_STEP_SUMMARY 
+          echo -e '### Rsync output with RSYNC_RSH appended with -v\n\n```' >> "$FORGEJO_STEP_SUMMARY" 
+          RSYNC_RSH="${RSYNC_RSH} -v" rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" | tee -a "$FORGEJO_STEP_SUMMARY"
+          echo -e '\n```' >> "$FORGEJO_STEP_SUMMARY" 
           echo "::error::rsync failed with ${_rsync_exit}"
           exit ${_rsync_exit}
         fi
@@ -190,8 +212,9 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        echo "::notice::Build is accessible at ${{ steps.build.outputs.site_url }}" | tee -a $FORGEJO_STEP_SUMMARY
+        echo "::notice::Build is accessible at ${{ steps.build.outputs.site_url }}" | tee -a "$FORGEJO_STEP_SUMMARY"
 
+        # shellcheck disable=SC2050
         if [ "${{ github.event_name }}" == "pull_request" ]; then
           echo "This is a PR, adding a comment if it hasnt been created yet"
           echo "::group::Creating comment on PR"
@@ -205,6 +228,8 @@ runs:
             forgejo-curl.sh --verbose api_json --data-raw '{"body":"Website preview: ${{ env.HUGO_BASEURL }}"}' ${{ env.FORGEJO_SERVER_URL }}/api/v1/repos/${{ env.FORGEJO_REPOSITORY }}/issues/${{ github.event.number }}/comments
           fi
           echo "::endgroup::"
+        else
+          echo "Not a pull request - skipping comment creation"
         fi
 branding:
   icon: "check"

@@ -16,10 +16,9 @@ runs:
       id: checkout
       uses: actions/checkout@v5
       with:
-        fetch-depth: 0
+        fetch-depth: 1
         ref:
           ${{ steps.extract_branch.outputs.branch }}
-          #${{ github.head_ref }}
 
     - name: install prettier-plugins
       # workaround for <https://github.com/creyD/prettier_action/issues/111>

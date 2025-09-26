@@ -19,15 +19,29 @@ Jobs:
 - variable `SSH_KNOWN_HOSTS` (if using below example)
 - secret `SSH_PRIVATE_KEY` (if using below example)
 
-## PR builds
+## PR builds and Branch builds
 
-PR builds behave differently from non-pr builds and use the `pr_` prefixed variables.
+PR builds and branch builds behave differently from main branch builds and use the `pr_` prefixed variables.
+
+### PR builds
 
 The domain/folders/etc. are combined from `pr_domain`, `pr_subdomain` and `-pr-{TheCurrentPRsID}`.
 
 Example:
 
 `pr_domain: development.example.com` and `pr_subdomain: prod-test` in a PR with the ID `1312` will run with [hugoBaseurl](gohugo.io/methods/site/baseurl/) = <http://prod-test-pr-1312.development.example.com> and rsync the files in `public/` to the directory `prod-test-pr-1312.development.example.com/`.
+
+### Branch builds
+
+Branch builds (pushes to non-default branches) work similarly to PR builds but use the branch name instead of PR number. Forward slashes (`/`) in branch names are replaced with underscores (`_`) for domain-safe naming.
+
+The domain/folders/etc. are combined from `pr_domain`, `pr_subdomain` and `-branch-{SanitizedBranchName}`.
+
+Example:
+
+`pr_domain: development.example.com` and `pr_subdomain: prod-test` with a branch named `feature/new-component` will run with [hugoBaseurl](gohugo.io/methods/site/baseurl/) = <http://prod-test-branch-feature_new-component.development.example.com> and rsync the files in `public/` to the directory `prod-test-branch-feature_new-component.development.example.com/`.
+
+**Note:** Branch builds do not create PR comments since there is no associated pull request.
 
 ## Server configuration
 
@@ -37,7 +51,7 @@ This can be combined with [rrsync](https://man.archlinux.org/man/rrsync.1) to li
 
 If you add this to your `~/.ssh/authorized_keys` the specified key can only write into `/srv`; [`-munge`](https://man.archlinux.org/man/rsync.1#munge-links) is a security feature that breaks symlinks, that you can not access e.g. files outside of `/srv`.
 
-```
+```text
 command="/usr/bin/rrsync -munge /srv",no-agent-forwarding,no-port-forwarding,no-pty,no-user-rc,no-X11-forwarding ssh-something YOUR KEY HERE
 ```
 
@@ -47,13 +61,13 @@ I use [caddy](https://caddyserver.com/) with this configuration for the PR build
 
 ```text
 *.development.example.com:80 {
-	root /srv
-	rewrite /{host}{uri}
-	@forbidden {
-		path /.*
-	}
-	respond @forbidden 404
-	file_server
+    root /srv
+    rewrite /{host}{uri}
+    @forbidden {
+        path /.*
+    }
+    respond @forbidden 404
+    file_server
 }
 ```
 
@@ -71,16 +85,13 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   push:
-    branches:
-      - main
-  # this will only work with the main branch, as it checks if it has been started by a PR or not
   workflow_dispatch:
 
 jobs:
   build-and-publish:
     runs-on: docker
     container:
-      # alpine based image wiht hugo installed
+      # alpine based image with hugo installed
       image: "hugomods/hugo:exts-0.148.1"
     steps:
       - uses: actions/checkout@v4
