@@ -3,7 +3,7 @@
 {
   // Default state for all rules
   "default": true,
-  
+
   // Disable rules that may conflict with Prettier
   "blanks-around-fences": false,
   "blanks-around-headings": false,
