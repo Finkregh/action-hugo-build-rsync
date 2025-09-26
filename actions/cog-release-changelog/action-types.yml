@@ -21,3 +21,7 @@ outputs:
     type: string
   new_dev:
     type: string
+  create_tag_output:
+    type: string
+  create_release_output:
+    type: string

@@ -144,11 +144,13 @@ A composite GitHub Action that combines version determination using cocogitto, r
 
 ## Outputs
 
-| Output    | Description                               |
-| --------- | ----------------------------------------- |
-| `current` | Current version from cocogitto            |
-| `new`     | New version from cocogitto auto bump      |
-| `new_dev` | New development version with \_dev suffix |
+| Output                  | Description                                      |
+| ----------------------- | ------------------------------------------------ |
+| `current`               | Current version from cocogitto                   |
+| `new`                   | New version from cocogitto auto bump             |
+| `new_dev`               | New development version with \_dev suffix        |
+| `create_tag_output`     | Output from creating the tag via Forgejo API     |
+| `create_release_output` | Output from creating the release via Forgejo API |
 
 ## Environment Variables Format
 
