@@ -70,7 +70,7 @@ runs:
   steps:
     # Step 1: Checkout with tags and history
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.3.0
       with:
         fetch-tags: true
         fetch-depth: 30
@@ -126,7 +126,7 @@ runs:
 
     # Step 4: Checkout again for build phase (matching original workflow)
     - name: Checkout for build
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.3.0
       with:
         fetch-depth: 10
         fetch-tags: true
