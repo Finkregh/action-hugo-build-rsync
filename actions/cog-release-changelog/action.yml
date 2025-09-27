@@ -74,7 +74,8 @@ runs:
       with:
         fetch-tags: true
         fetch-depth: 30
-
+    - name: Install jq
+      uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-jq@main
     # Step 2: Install cocogitto
     - name: Install cocogitto
       uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-cocogitto@main
