@@ -1,0 +1,25 @@
+---
+inputs:
+  working-directory:
+    type: string
+  dry-run:
+    type: boolean
+  dry-run-on-non-default-branch:
+    type: boolean
+  cog_bump_args:
+    type: string
+  cog_changelog_args:
+    type: string
+  create-forgejo-release:
+    type: boolean
+outputs:
+  current_version:
+    type: string
+  previous_version:
+    type: string
+  changelog:
+    type: string
+  forgejo_release_url:
+    type: string
+  forgejo_release_output:
+    type: string
