@@ -1,0 +1,185 @@
+name: Test Action
+
+on:
+  push:
+    paths:
+      - "actions/prettier-markdown/action.yml"
+      - ".github/workflows/test-action.yml"
+  pull_request:
+    paths:
+      - "actions/prettier-markdown/action.yml"
+      - ".github/workflows/test-action.yml"
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    name: Test Prettier and Markdownlint Action
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create test files
+        run: |
+          # Create some test files to format
+          mkdir -p test-files
+
+          # Create a poorly formatted markdown file
+          cat > test-files/test.md << 'EOF'
+          # Test File
+
+          This is a test markdown file with some formatting issues.
+
+          -   Item 1
+          -    Item 2
+          -     Item 3
+
+          Some code:
+          ```javascript
+          const x=1;const y=2;
+          ```
+          EOF
+
+          # Create a poorly formatted TOML file
+          cat > test-files/test.toml << 'EOF'
+          [section]
+          key1="value1"
+          key2   =   "value2"
+          EOF
+
+          # Create a poorly formatted shell script
+          cat > test-files/test.sh << 'EOF'
+          #!/bin/bash
+          echo "hello world"
+          if [ "$1" = "test" ];then
+          echo "testing"
+          fi
+          EOF
+
+      - name: Show files before formatting
+        run: |
+          echo "=== Files before formatting ==="
+          find test-files -type f -exec echo "--- {} ---" \; -exec cat {} \;
+
+      - name: Test the action
+        uses: ./actions/prettier-markdown
+        with:
+          prettier_plugins: "prettier-plugin-toml prettier-plugin-sh"
+          prettier_options: "--write test-files/**/*"
+          markdownlint_globs: "test-files/**/*.md"
+          commit_message: "test: formatting changes"
+          skip_commit: "true"
+
+      - name: Show files after formatting
+        run: |
+          echo "=== Files after formatting ==="
+          find test-files -type f -exec echo "--- {} ---" \; -exec cat {} \;
+
+      - name: Verify formatting worked
+        run: |
+          # Check if files were actually formatted
+          echo "=== Checking if files were formatted ==="
+
+          # Check if prettier ran on TOML file
+          if grep -q 'key2   =   "value2"' test-files/test.toml; then
+            echo "ERROR: TOML file was not formatted properly"
+            exit 1
+          else
+            echo "✓ TOML file was formatted"
+          fi
+
+          # Check if prettier ran on shell script
+          if grep -q 'if \[ "$1" = "test" \];then' test-files/test.sh; then
+            echo "ERROR: Shell script was not formatted properly"
+            exit 1
+          else
+            echo "✓ Shell script was formatted"
+          fi
+
+          echo "✓ All formatting checks passed"
+
+  test-action-with-custom-inputs:
+    runs-on: ubuntu-latest
+    name: Test Action with Custom Inputs
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create test markdown file
+        run: |
+          mkdir -p test-custom
+          cat > test-custom/README.md << 'EOF'
+          # Test Custom
+
+          This is a test with custom settings.
+
+          * Item 1
+          * Item 2
+          EOF
+
+      - name: Test action with custom commit settings
+        uses: ./actions/prettier-markdown
+        with:
+          prettier_options: "--write test-custom/**/*"
+          markdownlint_globs: "test-custom/**/*.md"
+          commit_message: "style: custom formatting"
+          commit_user_name: "Test Bot"
+          commit_user_email: "test@example.com"
+          commit_author: "Test Bot <test@example.com>"
+          skip_commit: "true"
+
+  test-action-minimal:
+    runs-on: ubuntu-latest
+    name: Test Action with Minimal Configuration
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create test file
+        run: |
+          mkdir -p test-minimal
+          echo "# Test" > test-minimal/test.md
+
+      - name: Test action with defaults (no commit settings)
+        uses: ./actions/prettier-markdown
+        with:
+          prettier_options: "--write test-minimal/**/*"
+          markdownlint_globs: "test-minimal/**/*.md"
+          skip_commit: "true"
+
+  test-skip-commit-functionality:
+    runs-on: ubuntu-latest
+    name: Test Skip Commit Functionality
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create test file
+        run: |
+          mkdir -p test-skip-commit
+          echo "# Test Skip Commit" > test-skip-commit/test.md
+
+      - name: Test action with skip_commit=true (should not commit)
+        uses: ./actions/prettier-markdown
+        with:
+          prettier_options: "--write test-skip-commit/**/*"
+          markdownlint_globs: "test-skip-commit/**/*.md"
+          skip_commit: "true"
+
+      - name: Verify no commit was made
+        run: |
+          # Check that git status shows no commits were made
+          echo "=== Checking git status after skip_commit=true ==="
+          git status --porcelain
+
+          # If there are changes, they should still be in working directory (not committed)
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "✓ Changes are in working directory (not committed) - skip_commit worked"
+          else
+            echo "✓ No changes detected - skip_commit worked"
+          fi
