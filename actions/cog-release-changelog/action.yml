@@ -207,6 +207,7 @@ runs:
         TAG: ${{ steps.get_versions.outputs.new }}
         COMMIT_SHA: ${{ steps.commit_sha.outputs.sha }}
       run: |
+        set -x
         echo "::group::Creating tag and release"
         export PATH=/usr/local/bin:$PATH
 
