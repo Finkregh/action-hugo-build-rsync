@@ -225,11 +225,12 @@ runs:
         # Create tag
         echo "Creating tag $TAG..."
         OUTPUT_CREATE_TAG=$(mktemp)
-        forgejo-curl.sh POST "/repos/$REPO/tags" --data-raw "{\"tag_name\": \"$TAG\", \"target\": \"$COMMIT_SHA\"}" > "$OUTPUT_CREATE_TAG"
+        forgejo-curl.sh "${FORGEJO_SERVER_URL}/api/v1/repos/${{ github.repository }}/tags" --data-raw "{\"tag_name\": \"$TAG\", \"target\": \"$COMMIT_SHA\"}" > "$OUTPUT_CREATE_TAG"
 
         if [ $? -eq 0 ]; then
           echo "Tag created successfully"
           cat "$OUTPUT_CREATE_TAG"
+          git fetch --tags
         else
           echo "Failed to create tag"
           cat "$OUTPUT_CREATE_TAG"
@@ -243,7 +244,7 @@ runs:
         # Create release
         echo "Creating release $TAG..."
         OUTPUT_CREATE_RELEASE=$(mktemp)
-        forgejo-curl.sh POST "/repos/$REPO/releases" --data-raw "{\"name\": \"$TAG\", \"tag_name\": \"$TAG\", \"body\": $(echo "$CHANGELOG" | jq -R -s .)}" > "$OUTPUT_CREATE_RELEASE"
+        forgejo-curl.sh "${FORGEJO_SERVER_URL}/api/v1/repos/$REPO/releases" --data-raw "{\"name\": \"$TAG\", \"tag_name\": \"$TAG\", \"body\": $(echo "$CHANGELOG" | jq -R -s .)}" > "$OUTPUT_CREATE_RELEASE"
 
         if [ $? -eq 0 ]; then
           echo "Release created successfully"
