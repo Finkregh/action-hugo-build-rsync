@@ -14,9 +14,9 @@ jobs:
 
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v5
+        uses: https://code.forgejo.org/actions/checkout@v5
         with:
           fetch-depth: 0
           ref: ${{ steps.extract_branch.outputs.branch }}
       - name: Generate release with changelog
-        uses: ./actions/cog-release-changelog
+        uses: ./actions/release-with-cog
