@@ -21,7 +21,17 @@ inputs:
     required: false
   cog_changelog_args:
     description: Additional arguments to pass to `cog changelog`, e.g. `--unreleased`
-    default: "--remote ${{ env.GITHUB_SERVER_URL##*/ }} --owner ${{ env.GITHUB_REPOSITORY_OWNER }} --repo ${{ env.GITHUB_REPOSITORY##*/ }}"
+    default: ""
+    required: false
+  remote:
+    description: Remote server name for changelog generation (e.g., github.com, forgejo.example.com)
+    required: false
+  owner:
+    description: Repository owner for changelog generation
+    required: false
+  repo:
+    description: Repository name for changelog generation
+    required: false
   create-forgejo-release:
     description: If true, create a Forgejo release for the new tag
     default: "true"
@@ -45,69 +55,42 @@ outputs:
     value: ${{ steps.create_forgejo_release.outputs.forgejo_release_output }}
     description: |
       Output from the Forgejo API when creating the release.
-      Example:
-        {
-          "archive_download_count": {
-            "tar_gz": 0,
-            "zip": 0
-          },
-          "assets": [
-            {
-              "browser_download_url": "string",
-              "created_at": "2025-09-26T21:19:45.046Z",
-              "download_count": 0,
-              "id": 0,
-              "name": "string",
-              "size": 0,
-              "type": "attachment",
-              "uuid": "string"
-            }
-          ],
-          "author": {
-            "active": true,
-            "avatar_url": "string",
-            "created": "2025-09-26T21:19:45.046Z",
-            "description": "string",
-            "email": "user@example.com",
-            "followers_count": 0,
-            "following_count": 0,
-            "full_name": "string",
-            "html_url": "string",
-            "id": 0,
-            "is_admin": true,
-            "language": "string",
-            "last_login": "2025-09-26T21:19:45.046Z",
-            "location": "string",
-            "login": "string",
-            "login_name": "empty",
-            "prohibit_login": true,
-            "pronouns": "string",
-            "restricted": true,
-            "source_id": 0,
-            "starred_repos_count": 0,
-            "visibility": "string",
-            "website": "string"
-          },
-          "body": "string",
-          "created_at": "2025-09-26T21:19:45.046Z",
-          "draft": true,
-          "hide_archive_links": true,
-          "html_url": "string",
-          "id": 0,
-          "name": "string",
-          "prerelease": true,
-          "published_at": "2025-09-26T21:19:45.046Z",
-          "tag_name": "string",
-          "tarball_url": "string",
-          "target_commitish": "string",
-          "upload_url": "string",
-          "url": "string",
-          "zipball_url": "string"
-        }
 
 runs:
   using: composite
   steps:
+    - id: set-defaults
+      name: Set default values for remote, owner, repo
+      run: |
+        # Set remote (extract domain from GITHUB_SERVER_URL)
+        REMOTE_INPUT="${{ inputs.remote }}"
+        if [[ -z "${REMOTE_INPUT}" ]]; then
+          REMOTE="${{ env.GITHUB_SERVER_URL##*// }}"
+          REMOTE="${REMOTE%%/*}"
+          echo "remote=${REMOTE}" >> "$GITHUB_OUTPUT"
+        else
+          echo "remote=${REMOTE_INPUT}" >> "$GITHUB_OUTPUT"
+        fi
+
+        # Set owner
+        OWNER_INPUT="${{ inputs.owner }}"
+        if [[ -z "${OWNER_INPUT}" ]]; then
+          echo "owner=${{ env.GITHUB_REPOSITORY_OWNER }}" >> "$GITHUB_OUTPUT"
+        else
+          echo "owner=${OWNER_INPUT}" >> "$GITHUB_OUTPUT"
+        fi
+
+        # Set repo (extract repo name from GITHUB_REPOSITORY)
+        REPO_INPUT="${{ inputs.repo }}"
+        if [[ -z "${REPO_INPUT}" ]]; then
+          REPO="${{ env.GITHUB_REPOSITORY##*/ }}"
+          echo "repo=${REPO}" >> "$GITHUB_OUTPUT"
+        else
+          echo "repo=${REPO_INPUT}" >> "$GITHUB_OUTPUT"
+        fi
+
+        echo "::notice::Set defaults - remote: $(grep 'remote=' "$GITHUB_OUTPUT" | cut -d'=' -f2), owner: $(grep 'owner=' "$GITHUB_OUTPUT" | cut -d'=' -f2), repo: $(grep 'repo=' "$GITHUB_OUTPUT" | cut -d'=' -f2)"
+      shell: bash
     - id: dryrun-arg
       name: Set dry-run arg
       run: |
@@ -136,8 +119,8 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
-        echo "Running this: cog bump ${{ input.cog_bump_args }} ${{ steps.dryrun-arg.outputs.arg }} --auto --skip-ci"
-        cog bump ${{ input.cog_bump_args }} ${{ steps.dryrun-arg.outputs.arg }} --auto --skip-ci || true
+        echo "Running this: cog bump ${{ inputs.cog_bump_args }} ${{ steps.dryrun-arg.outputs.arg }} --auto --skip-ci"
+        cog bump ${{ inputs.cog_bump_args }} ${{ steps.dryrun-arg.outputs.arg }} --auto --skip-ci || true
       continue-on-error: true
     - id: current_version
       working-directory: ${{ inputs.working-directory }}
@@ -150,9 +133,19 @@ runs:
       name: Output changelog
       working-directory: ${{ inputs.working-directory }}
       run: |
-        echo "Generating changelog with: cog ${{ input.cog_changelog_args }} changelog --at \"$(yq -o csv '.tag_prefix // ""' cog.toml)""$(cog get-version 2>/dev/null)\""
+        # Build changelog args with remote, owner, repo from set-defaults step
+        CHANGELOG_ARGS="${{ inputs.cog_changelog_args }}"
+        REMOTE_VALUE="${{ steps.set-defaults.outputs.remote }}"
+        OWNER_VALUE="${{ steps.set-defaults.outputs.owner }}"
+        REPO_VALUE="${{ steps.set-defaults.outputs.repo }}"
+
+        if [[ -n "${REMOTE_VALUE}" && -n "${OWNER_VALUE}" && -n "${REPO_VALUE}" ]]; then
+          CHANGELOG_ARGS="${CHANGELOG_ARGS} --remote ${REMOTE_VALUE} --owner ${OWNER_VALUE} --repo ${REPO_VALUE}"
+        fi
+
+        echo "Generating changelog with: cog ${CHANGELOG_ARGS} changelog --at \"$(yq -o csv '.tag_prefix // ""' cog.toml)""$(cog get-version 2>/dev/null)\""
         echo 'changelog<<EOF' >> "$GITHUB_OUTPUT"
-        cog ${{ input.cog_changelog_args }} changelog --at "$(yq -o csv '.tag_prefix // ""' cog.toml)""$(cog get-version 2>/dev/null)" >> "$GITHUB_OUTPUT"
+        cog ${CHANGELOG_ARGS} changelog --at "$(yq -o csv '.tag_prefix // ""' cog.toml)""$(cog get-version 2>/dev/null)" >> "$GITHUB_OUTPUT"
         echo 'EOF' >> "$GITHUB_OUTPUT"
       shell: bash
     - id: install-jo

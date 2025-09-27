@@ -10,6 +10,12 @@ inputs:
     type: string
   cog_changelog_args:
     type: string
+  remote:
+    type: string
+  owner:
+    type: string
+  repo:
+    type: string
   create-forgejo-release:
     type: boolean
 outputs:

@@ -14,7 +14,11 @@ This action is a fork from [PurpleBooth/common-pipelines](https://codeberg.org/P
     dry-run: "false"
     dry-run-on-non-default-branch: "true"
     cog_bump_args: ""
-    cog_changelog_args: "--remote ${{ env.GITHUB_SERVER_URL##*/ }} --owner ${{ env.GITHUB_REPOSITORY_OWNER }} --repo ${{ env.GITHUB_REPOSITORY##*/ }}"
+    cog_changelog_args: ""
+    # Optional: Override defaults for changelog generation
+    # remote: "forge.example.com"
+    # owner: "my-org"
+    # repo: "my-repo"
     create-forgejo-release: "true"
   id: release
 
@@ -27,14 +31,17 @@ This action is a fork from [PurpleBooth/common-pipelines](https://codeberg.org/P
 
 ## Inputs
 
-| Input                           | Description                                                               | Required | Default                                                                                                                      |
-| ------------------------------- | ------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `working-directory`             | The working dir to run in                                                 | No       | `"."`                                                                                                                        |
-| `dry-run`                       | If true, no git tag or commit will be created when on main branch         | No       | `"false"`                                                                                                                    |
-| `dry-run-on-non-default-branch` | If true, no git tag or commit will be created when on e.g. feature branch | No       | `"true"`                                                                                                                     |
-| `cog_bump_args`                 | Additional arguments to pass to `cog bump`, e.g. `--major` or `--minor`   | No       | `""`                                                                                                                         |
-| `cog_changelog_args`            | Additional arguments to pass to `cog changelog`, e.g. `--unreleased`      | No       | `"--remote ${{ env.GITHUB_SERVER_URL }} --owner ${{ env.GITHUB_REPOSITORY_OWNER }} --repo ${{ env.GITHUB_REPOSITORY##*/ }}"` |
-| `create-forgejo-release`        | If true, create a Forgejo release for the new tag                         | No       | `"true"`                                                                                                                     |
+| Input                           | Description                                                                         | Required | Default                                      |
+| ------------------------------- | ----------------------------------------------------------------------------------- | -------- | -------------------------------------------- |
+| `working-directory`             | The working dir to run in                                                           | No       | `"."`                                        |
+| `dry-run`                       | If true, no git tag or commit will be created when on main branch                   | No       | `"false"`                                    |
+| `dry-run-on-non-default-branch` | If true, no git tag or commit will be created when on e.g. feature branch           | No       | `"true"`                                     |
+| `cog_bump_args`                 | Additional arguments to pass to `cog bump`, e.g. `--major` or `--minor`             | No       | `""`                                         |
+| `cog_changelog_args`            | Additional arguments to pass to `cog changelog`, e.g. `--unreleased`                | No       | `""`                                         |
+| `remote`                        | Remote server name for changelog generation (e.g., github.com, forgejo.example.com) | No       | Auto-detected from `GITHUB_SERVER_URL`       |
+| `owner`                         | Repository owner for changelog generation                                           | No       | Auto-detected from `GITHUB_REPOSITORY_OWNER` |
+| `repo`                          | Repository name for changelog generation                                            | No       | Auto-detected from `GITHUB_REPOSITORY`       |
+| `create-forgejo-release`        | If true, create a Forgejo release for the new tag                                   | No       | `"true"`                                     |
 
 ## Outputs
 
