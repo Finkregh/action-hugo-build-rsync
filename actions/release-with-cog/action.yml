@@ -65,7 +65,7 @@ runs:
         # Set remote (extract domain from GITHUB_SERVER_URL)
         REMOTE_INPUT="${{ inputs.remote }}"
         if [[ -z "${REMOTE_INPUT}" ]]; then
-          REMOTE="${{ env.GITHUB_SERVER_URL##*// }}"
+          REMOTE="${GITHUB_SERVER_URL##*// }"
           REMOTE="${REMOTE%%/*}"
           echo "remote=${REMOTE}" >> "$GITHUB_OUTPUT"
         else
@@ -83,7 +83,7 @@ runs:
         # Set repo (extract repo name from GITHUB_REPOSITORY)
         REPO_INPUT="${{ inputs.repo }}"
         if [[ -z "${REPO_INPUT}" ]]; then
-          REPO="${{ env.GITHUB_REPOSITORY##*/ }}"
+          REPO="${GITHUB_REPOSITORY##*/}"
           echo "repo=${REPO}" >> "$GITHUB_OUTPUT"
         else
           echo "repo=${REPO_INPUT}" >> "$GITHUB_OUTPUT"
