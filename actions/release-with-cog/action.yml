@@ -184,7 +184,7 @@ runs:
       run: |
         CHANGELOG="${{ steps.changelog.outputs.changelog }}"
         VERSION="${{ steps.current_version.outputs.current_version }}"
-        JSON_PAYLOAD=$(jo name="$VERSION" tag_name="$VERSION" body="$(echo "$CHANGELOG" | jq -R .)")
+        JSON_PAYLOAD=$(jo name="$VERSION" tag_name="$VERSION" body="$CHANGELOG")
         FORGEJO_API_RETURN=$(forgejo-curl.sh --verbose api_json --data-raw "${JSON_PAYLOAD}" "${{ env.GITHUB_SERVER_URL }}/api/v1/repos/${{ env.GITHUB_REPOSITORY }}/releases")
         echo "Forgejo API response: $FORGEJO_API_RETURN"
         echo "forgejo_release_output<<EOF" >> "$GITHUB_OUTPUT"
