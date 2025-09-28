@@ -165,11 +165,8 @@ runs:
         echo "::endgroup::"
     - id: install-forgejo-curl
       name: Install helper script
-      if: ${{ inputs.forgejo_server_url != '' && inputs.forgejo_token != '' }} && ${{ steps.install-jo.outcome == 'success' }}
+      if: ${{ steps.install-jo.outcome == 'success' }}
       shell: bash
-      env:
-        FORGEJO_TOKEN: ${{ inputs.forgejo_token }}
-        FORGEJO_SERVER_URL: ${{ inputs.forgejo_server_url }}
       run: |
         echo "::startgroup::Install forgejo-curl.sh and login"
         set -x
