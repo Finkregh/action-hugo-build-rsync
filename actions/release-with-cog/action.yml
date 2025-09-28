@@ -103,6 +103,8 @@ runs:
         fi
         echo "::notice::Set output $(cat "$GITHUB_OUTPUT")"
       shell: bash
+    - name: Install cocogitto
+      uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-cocogitto@0.31.3
     - id: previous_version
       name: Output previous_version
       working-directory: ${{ inputs.working-directory }}
