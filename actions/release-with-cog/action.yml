@@ -138,6 +138,7 @@ runs:
       name: Output changelog
       #working-directory: ${{ inputs.working-directory }}
       run: |
+        set -x
         # Build changelog args with remote, owner, repo from set-defaults step
         CHANGELOG_ARGS="${{ inputs.cog_changelog_args }}"
         REMOTE_VALUE="${{ steps.set-defaults.outputs.remote }}"
