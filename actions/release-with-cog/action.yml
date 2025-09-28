@@ -136,7 +136,7 @@ runs:
       shell: bash
     - id: changelog
       name: Output changelog
-      working-directory: ${{ inputs.working-directory }}
+      #working-directory: ${{ inputs.working-directory }}
       run: |
         # Build changelog args with remote, owner, repo from set-defaults step
         CHANGELOG_ARGS="${{ inputs.cog_changelog_args }}"
@@ -150,7 +150,7 @@ runs:
 
         echo "Generating changelog with: cog ${CHANGELOG_ARGS} changelog --at \"$(yq -o csv '.tag_prefix // ""' cog.toml)""$(cog get-version 2>/dev/null)\""
         echo 'changelog<<EOF' >> "$GITHUB_OUTPUT"
-        cog ${CHANGELOG_ARGS} changelog --at "$(yq -o csv '.tag_prefix // ""' cog.toml)""$(cog get-version 2>/dev/null)" >> "$GITHUB_OUTPUT"
+        cog changelog ${CHANGELOG_ARGS} --at "$(yq -o csv '.tag_prefix // ""' cog.toml)""$(cog get-version 2>/dev/null)" >> "$GITHUB_OUTPUT"
         echo 'EOF' >> "$GITHUB_OUTPUT"
       shell: bash
     - id: install-jo
