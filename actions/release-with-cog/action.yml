@@ -146,7 +146,7 @@ runs:
         REPO_VALUE="${{ steps.set-defaults.outputs.repo }}"
 
         if [[ -n "${REMOTE_VALUE}" && -n "${OWNER_VALUE}" && -n "${REPO_VALUE}" ]]; then
-          CHANGELOG_ARGS="${CHANGELOG_ARGS} --remote ${REMOTE_VALUE} --owner ${OWNER_VALUE} --repo ${REPO_VALUE}"
+          CHANGELOG_ARGS="${CHANGELOG_ARGS} --remote ${REMOTE_VALUE} --owner ${OWNER_VALUE} --repository ${REPO_VALUE}"
         fi
 
         echo "Generating changelog with: cog ${CHANGELOG_ARGS} changelog --at \"$(yq -o csv '.tag_prefix // ""' cog.toml)""$(cog get-version 2>/dev/null)\""
