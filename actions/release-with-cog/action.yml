@@ -104,11 +104,35 @@ runs:
       shell: bash
     - name: Configure Git User
       uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/configure-git-user@0.31.3
-    - uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-yq@0.31.3
-      name: Install yq
-    - uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-jq@0.31.3
+    - name: Install yq
+      uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-yq@0.31.3
+    - name: Install jq
+      uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-jq@0.31.3
     - name: Install cocogitto
       uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-cocogitto@0.31.3
+    - name: Install uv and python
+      uses: https://github.com/astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        activate-environment: true
+    - name: Verify/set cog config values
+      shell: bash
+      run: |
+        echo "::group::Verify/set cog config values"
+        uv pip install -r actions/release-with-cog/requirements.txt
+        COG_REMOTE="${{ steps.set-defaults.outputs.remote }}"
+        COG_OWNER="${{ steps.set-defaults.outputs.owner }}"
+        COG_REPOSITORY="${{ steps.set-defaults.outputs.repo }}"
+        export COG_REMOTE COG_OWNER COG_REPOSITORY
+        python3 actions/release-with-cog/setup_cog_config.py
+        git add cog.toml
+        if ! git diff --cached --quiet; then
+          git commit -m "chore: update cog.toml with remote/owner/repo [skip ci]" || true
+          git push origin HEAD
+        else
+          echo "No changes to cog.toml"
+        fi
+        echo "::endgroup::"
     - id: previous_version
       name: Output previous_version
       working-directory: ${{ inputs.working-directory }}
@@ -129,6 +153,7 @@ runs:
         cog bump ${{ inputs.cog_bump_args }} ${{ steps.dryrun-arg.outputs.arg }} --auto --skip-ci || true
         git status
         git diff
+        exit 1
         git add '**/CHANGELOG.md'
         git commit --amend --no-edit
         git push --tags
@@ -162,13 +187,10 @@ runs:
       shell: bash
     - id: install-jo
       name: Install jo
-      if: ${{ inputs.create-forgejo-release == 'true' && steps.release.outcome == 'success' && steps.current_version.outputs.current_version != '' }}
-      shell: bash
-      run: |
-        echo "::group::Install jo"
-        apt-get update
-        apt-get install -y jo
-        echo "::endgroup::"
+      if: ${{ inputs.create-forgejo-release == 'true' && steps.current_version.outputs.current_version != '' }}
+      uses: https://github.com/awalsh128/cache-apt-pkgs-action@v1.5.3
+      with:
+        packages: jo
     - id: install-forgejo-curl
       name: Install helper script
       if: ${{ steps.install-jo.outcome == 'success' }}
