@@ -172,6 +172,7 @@ runs:
         FORGEJO_SERVER_URL: ${{ inputs.forgejo_server_url }}
       run: |
         echo "::startgroup::Install forgejo-curl.sh and login"
+        set -x
         curl --fail -sS -o /usr/local/bin/forgejo-curl.sh "https://git.h.oluflorenzen.de/mirrors/forgejo-curl/raw/branch/main/forgejo-curl.sh" && chmod +x /usr/local/bin/forgejo-curl.sh
         export PATH=/usr/local/bin:$PATH
         forgejo-curl.sh --token "${{ env.FORGEJO_TOKEN }}" login ${{ env.FORGEJO_SERVER_URL }}
