@@ -1,0 +1,26 @@
+from_latest_tag = false
+ignore_merge_commits = true
+disable_changelog = false
+generate_mono_repository_global_tag = true
+branch_whitelist = []
+skip_ci = "[skip ci]"
+skip_untracked = false
+pre_package_bump_hooks = []
+post_package_bump_hooks = []
+pre_bump_hooks = []
+post_bump_hooks = ["git push", "git push --tags"]
+
+
+[changelog]
+path = "CHANGELOG.md"
+authors = []
+template = "remote"
+
+
+[packages]
+ci = { path = ".forgejo/workflows", public_api = false }
+cog-release-changelog = { path = "actions/cog-release-changelog" }
+hugo-build-rsync = { path = "actions/hugo-build-rsync" }
+install-jo = { path = "actions/install-jo" }
+prettier-markdown = { path = "actions/prettier-markdown" }
+release-with-cog = { path = "actions/release-with-cog" }
