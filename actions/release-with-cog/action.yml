@@ -125,8 +125,13 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
-        echo "Running this: cog bump ${{ inputs.cog_bump_args }} ${{ steps.dryrun-arg.outputs.arg }} --auto --skip-ci"
+        set -x
         cog bump ${{ inputs.cog_bump_args }} ${{ steps.dryrun-arg.outputs.arg }} --auto --skip-ci || true
+        git status
+        git diff
+        git add '**/CHANGELOG.md'
+        git commit --amend --no-edit
+        git push --tags
       continue-on-error: true
     - id: current_version
       working-directory: ${{ inputs.working-directory }}
