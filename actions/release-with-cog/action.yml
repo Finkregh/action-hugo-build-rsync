@@ -66,7 +66,6 @@ runs:
         REMOTE_INPUT="${{ inputs.remote }}"
         if [[ -z "${REMOTE_INPUT}" ]]; then
           REMOTE="${GITHUB_SERVER_URL##*// }"
-          REMOTE="${REMOTE%%/*}"
           echo "remote=${REMOTE}" >> "$GITHUB_OUTPUT"
         else
           echo "remote=${REMOTE_INPUT}" >> "$GITHUB_OUTPUT"
@@ -103,6 +102,10 @@ runs:
         fi
         echo "::notice::Set output $(cat "$GITHUB_OUTPUT")"
       shell: bash
+    - name: Configure Git User
+      uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/configure-git-user@0.31.3
+    - uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-yq@0.31.3
+      name: Install yq
     - name: Install cocogitto
       uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-cocogitto@0.31.3
     - id: previous_version
