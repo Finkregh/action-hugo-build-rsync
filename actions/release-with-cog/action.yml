@@ -191,6 +191,7 @@ runs:
       uses: https://github.com/awalsh128/cache-apt-pkgs-action@v1.5.3
       with:
         packages: jo
+        version: "1" # only used for the cache key?!
     - id: install-forgejo-curl
       name: Install helper script
       if: ${{ steps.install-jo.outcome == 'success' }}
