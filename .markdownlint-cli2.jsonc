@@ -1,0 +1,5 @@
+{
+  "ignores": [
+    "**/CHANGELOG.md" // auto-generated files
+  ]
+}
