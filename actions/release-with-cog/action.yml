@@ -184,10 +184,14 @@ runs:
     - id: install-jo
       name: Install jo
       if: ${{ inputs.create-forgejo-release == 'true' && steps.current_version.outputs.current_version != '' }}
-      uses: https://github.com/awalsh128/cache-apt-pkgs-action@v1.5.3
-      with:
-        packages: jo
-        version: "1" # only used for the cache key?!
+      shell: bash
+      run: |
+        echo "::startgroup::Install jo"
+        set -x
+        apt-get update
+        apt-get install -y jo
+        jo --version
+        echo "::endgroup::"
     - id: install-forgejo-curl
       name: Install helper script
       if: ${{ steps.install-jo.outcome == 'success' }}
