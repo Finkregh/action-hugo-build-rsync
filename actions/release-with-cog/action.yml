@@ -190,7 +190,7 @@ runs:
         set -x
         apt-get update
         apt-get install -y jo
-        jo --version
+        jo -v
         echo "::endgroup::"
     - id: install-forgejo-curl
       name: Install helper script
