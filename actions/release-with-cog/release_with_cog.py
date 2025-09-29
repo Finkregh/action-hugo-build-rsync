@@ -345,43 +345,36 @@ def generate_changelog(  # noqa: PLR0913
 ) -> str:
     """Generate changelog using cog."""
     start_group("Generate changelog")
+    args = ["changelog"]
 
-    try:
-        args = ["changelog"]
+    # Add user-specified changelog arguments
+    if inputs["cog_changelog_args"].strip():
+        args.extend(inputs["cog_changelog_args"].strip().split())
 
-        # Add user-specified changelog arguments
-        if inputs["cog_changelog_args"].strip():
-            args.extend(inputs["cog_changelog_args"].strip().split())
+    # Add remote, owner, repo if available
+    if remote and owner and repo:
+        args.extend(["--remote", remote, "--owner", owner, "--repository", repo])
 
-        # Add remote, owner, repo if available
-        if remote and owner and repo:
-            args.extend(["--remote", remote, "--owner", owner, "--repository", repo])
+    # Choose pattern based on event type
+    if is_pr_event:
+        # For PR events, use the PR changelog pattern
+        pr_pattern = inputs["pr_changelog_pattern"]
+        if pr_pattern:
+            args.append(pr_pattern)
+            info(f"Using PR changelog pattern: {pr_pattern}")
+    # For main branch events, use --at flag with tag prefix and version
+    elif version:
+        tag_prefix = get_tag_prefix()
+        full_tag = f"{tag_prefix}{version}"
+        args.extend(["--at", full_tag])
+        info(f"Using tag-based changelog: {full_tag}")
 
-        # Choose pattern based on event type
-        if is_pr_event:
-            # For PR events, use the PR changelog pattern
-            pr_pattern = inputs["pr_changelog_pattern"]
-            if pr_pattern:
-                args.append(pr_pattern)
-                info(f"Using PR changelog pattern: {pr_pattern}")
-        # For main branch events, use --at flag with tag prefix and version
-        elif version:
-            tag_prefix = get_tag_prefix()
-            full_tag = f"{tag_prefix}{version}"
-            args.extend(["--at", full_tag])
-            info(f"Using tag-based changelog: {full_tag}")
+    info(f"Generating changelog with: cog {' '.join(args)}")
 
-        info(f"Generating changelog with: cog {' '.join(args)}")
+    changelog = run_cog_command(args)
+    info("Changelog generated successfully")
 
-        changelog = run_cog_command(args)
-        info("Changelog generated successfully")
-
-        end_group()
-
-    except ReleaseWithCogError as e:
-        error(f"Failed to generate changelog: {e}")
-        end_group()
-        return ""
+    end_group()
 
     return changelog
 
