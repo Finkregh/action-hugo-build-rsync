@@ -25,14 +25,8 @@ owner = "finkregh"
 path = ".forgejo/workflows"
 public_api = false
 
-[packages.cog-release-changelog]
-path = "actions/cog-release-changelog"
-
 [packages.hugo-build-rsync]
 path = "actions/hugo-build-rsync"
-
-[packages.install-jo]
-path = "actions/install-jo"
 
 [packages.prettier-markdown]
 path = "actions/prettier-markdown"
