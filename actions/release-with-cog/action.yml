@@ -153,10 +153,6 @@ runs:
         cog bump ${{ inputs.cog_bump_args }} ${{ steps.dryrun-arg.outputs.arg }} --auto --skip-ci || true
         git status
         git diff
-        exit 1
-        git add '**/CHANGELOG.md'
-        git commit --amend --no-edit
-        git push --tags
       continue-on-error: true
     - id: current_version
       working-directory: ${{ inputs.working-directory }}
