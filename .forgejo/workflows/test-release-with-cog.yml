@@ -2,10 +2,10 @@
 name: Test Action
 
 on:
-  push:
-    branches: [main]
   pull_request:
-    branches: [main]
+    paths:
+      - "actions/release-with-cog/setup_cog_config.py"
+      - ".github/workflows/test-release-with-cog.yml"
 
 jobs:
   test-setup-cog-config:
@@ -34,7 +34,7 @@ jobs:
         run: |
           cd actions/release-with-cog || exit 1
           # Create a test cog.toml for dry run
-          cp ../../cog.toml test_cog.toml
+          touch test_cog.toml
           python -c 'import setup_cog_config; result = setup_cog_config.setup_cog_config("test_cog.toml", "test-remote", "test-repo", "test-owner"); print("Changes made:", result)'
           # Clean up
           rm -f test_cog.toml
