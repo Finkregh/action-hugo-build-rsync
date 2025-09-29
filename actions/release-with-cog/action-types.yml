@@ -18,6 +18,8 @@ inputs:
     type: string
   create-forgejo-release:
     type: boolean
+  update_cog_toml:
+    type: boolean
 outputs:
   current_version:
     type: string

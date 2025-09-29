@@ -1,0 +1,41 @@
+---
+name: Test Action
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-setup-cog-config:
+    name: Test setup_cog_config script
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install tomli tomli-w
+
+      - name: Run unit tests
+        run: |
+          cd actions/release-with-cog || exit 1
+          python setup_cog_config.py test
+
+      - name: Test script execution (dry run)
+        run: |
+          cd actions/release-with-cog || exit 1
+          # Create a test cog.toml for dry run
+          cp ../../cog.toml test_cog.toml
+          python -c 'import setup_cog_config; result = setup_cog_config.setup_cog_config("test_cog.toml", "test-remote", "test-repo", "test-owner"); print("Changes made:", result)'
+          # Clean up
+          rm -f test_cog.toml

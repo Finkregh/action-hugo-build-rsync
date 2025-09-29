@@ -36,6 +36,10 @@ inputs:
     description: If true, create a Forgejo release for the new tag
     default: "true"
     required: false
+  update_cog_toml:
+    description: If true, update cog.toml with remote/owner/repo if missing
+    default: "true"
+    required: false
 outputs:
   current_version:
     value: ${{ steps.current_version.outputs.current_version }}
@@ -111,11 +115,13 @@ runs:
     - name: Install cocogitto
       uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-cocogitto@0.31.3
     - name: Install uv and python
+      if: ${{ inputs.update_cog_toml == 'true' }}
       uses: https://github.com/astral-sh/setup-uv@v6
       with:
         enable-cache: true
         activate-environment: true
     - name: Verify/set cog config values
+      if: ${{ inputs.update_cog_toml == 'true' }}
       shell: bash
       run: |
         echo "::group::Verify/set cog config values"
