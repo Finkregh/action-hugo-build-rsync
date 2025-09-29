@@ -105,7 +105,14 @@ runs:
     - name: Install python packages
       shell: bash
       run: uv pip install -r actions/release-with-cog/requirements.txt
-
+    - name: debug
+      shell: bash
+      run: |
+        git status
+        git branch
+        git log -10 --oneline
+        ls -la
+        pwd
     - name: Run release-with-cog Python script
       id: release_with_cog
       shell: bash
