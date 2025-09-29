@@ -21,7 +21,7 @@ inputs:
     required: false
   cog_changelog_args:
     description: Additional arguments to pass to `cog changelog`, e.g. `--unreleased`
-    default: ""
+    default: "--template remote"
     required: false
   remote:
     description: Remote server name for changelog generation (e.g., github.com, forgejo.example.com)
