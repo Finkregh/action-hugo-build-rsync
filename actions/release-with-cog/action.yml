@@ -41,7 +41,7 @@ inputs:
     default: "true"
     required: false
   pr_changelog_pattern:
-    description: 'Generate the changelog in the given spec range for PRs'
+    description: "Generate the changelog in the given spec range for PRs"
     required: false
     default: "origin/${{ env.GITHUB_BASE_REF }}..HEAD"
   comment_header:
