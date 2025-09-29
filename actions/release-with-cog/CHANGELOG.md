@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file. See [conven
 ## release-with-cog-0.1.0 - 2025-09-29
 #### Features
 - new action release-with-cog - (76ef5f4) - Oluf Lorenzen
+#### Miscellaneous Chores
+- **(version)** 2.1.0 [skip ci] - (4ffdd6b) - finkregh
+
+- - -
+
+## release-with-cog-0.1.0 - 2025-09-29
+#### Features
+- new action release-with-cog - (76ef5f4) - Oluf Lorenzen
 
 - - -
 

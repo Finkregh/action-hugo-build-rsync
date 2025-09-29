@@ -3,6 +3,20 @@ All notable changes to this project will be documented in this file. See [conven
 
 - - -
 ## cog-release-changelog-0.1.0 - 2025-09-29
+#### Miscellaneous Chores
+- **(version)** 2.1.0 [skip ci] - (4ffdd6b) - finkregh
+
+- - -
+
+## 2.0.0 - 2025-09-29
+#### Features
+- new action cog-release-changelog - (877bd5f) - Oluf Lorenzen
+#### Miscellaneous Chores
+- changes from ci - (557264b) - finkregh
+
+- - -
+
+## cog-release-changelog-0.1.0 - 2025-09-29
 #### Features
 - new action cog-release-changelog - (877bd5f) - Oluf Lorenzen
 #### Miscellaneous Chores

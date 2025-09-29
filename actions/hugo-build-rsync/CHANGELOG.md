@@ -10,6 +10,20 @@ All notable changes to this project will be documented in this file. See [conven
 - **(hugo-build-rsync)** allow setting http/s - (a0a939f) - Oluf Lorenzen
 - multiple actions in one repo - (f621b3c) - Oluf Lorenzen
 #### Miscellaneous Chores
+- **(version)** 2.1.0 [skip ci] - (4ffdd6b) - finkregh
+- changes from ci - (91c4e01) - finkregh
+- cleanup - (c3ade4d) - Oluf Lorenzen
+
+- - -
+
+## hugo-build-rsync-0.1.0 - 2025-09-29
+#### Continuous Integration
+- add type hints for action input - (1905f26) - Oluf Lorenzen
+#### Features
+- **(hugo-build-rsync)** github compatability - (eda3278) - Oluf Lorenzen
+- **(hugo-build-rsync)** allow setting http/s - (a0a939f) - Oluf Lorenzen
+- multiple actions in one repo - (f621b3c) - Oluf Lorenzen
+#### Miscellaneous Chores
 - changes from ci - (91c4e01) - finkregh
 - cleanup - (c3ade4d) - Oluf Lorenzen
 
