@@ -8,19 +8,34 @@ skip_untracked = false
 pre_package_bump_hooks = []
 post_package_bump_hooks = []
 pre_bump_hooks = []
-post_bump_hooks = ["git push", "git push --tags"]
-
+post_bump_hooks = [
+    "git push",
+    "git push --tags",
+]
 
 [changelog]
 path = "CHANGELOG.md"
 authors = []
 template = "remote"
+remote = "https://git.h.oluflorenzen.de"
+repository = "action-hugo-build-rsync"
+owner = "finkregh"
 
+[packages.ci]
+path = ".forgejo/workflows"
+public_api = false
 
-[packages]
-ci = { path = ".forgejo/workflows", public_api = false }
-cog-release-changelog = { path = "actions/cog-release-changelog" }
-hugo-build-rsync = { path = "actions/hugo-build-rsync" }
-install-jo = { path = "actions/install-jo" }
-prettier-markdown = { path = "actions/prettier-markdown" }
-release-with-cog = { path = "actions/release-with-cog" }
+[packages.cog-release-changelog]
+path = "actions/cog-release-changelog"
+
+[packages.hugo-build-rsync]
+path = "actions/hugo-build-rsync"
+
+[packages.install-jo]
+path = "actions/install-jo"
+
+[packages.prettier-markdown]
+path = "actions/prettier-markdown"
+
+[packages.release-with-cog]
+path = "actions/release-with-cog"
