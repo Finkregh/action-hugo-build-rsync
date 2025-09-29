@@ -42,70 +42,27 @@ inputs:
     required: false
 outputs:
   current_version:
-    value: ${{ steps.current_version.outputs.current_version }}
+    value: ${{ steps.release_with_cog.outputs.current_version }}
     description: The version after the bump
   previous_version:
-    value: ${{ steps.previous_version.outputs.previous_version }}
+    value: ${{ steps.release_with_cog.outputs.previous_version }}
     description: The version prior to bump
   changelog:
-    value: ${{ steps.changelog.outputs.changelog }}
+    value: ${{ steps.release_with_cog.outputs.changelog }}
     description: Changelog since last release in markdown
   forgejo_release_url:
-    value: ${{ fromJson(steps.create_forgejo_release.outputs.forgejo_release_output).html_url }}
+    value: ${{ fromJson(steps.release_with_cog.outputs.forgejo_release_output).html_url }}
     description: |
       URL of the created Forgejo release.
       Example: https://forgejo.example.com/owner/repo/releases/tag/v1.2.3
   forgejo_release_output:
-    value: ${{ steps.create_forgejo_release.outputs.forgejo_release_output }}
+    value: ${{ steps.release_with_cog.outputs.forgejo_release_output }}
     description: |
       Output from the Forgejo API when creating the release.
 
 runs:
   using: composite
   steps:
-    - id: set-defaults
-      name: Set default values for remote, owner, repo
-      run: |
-        # Set remote (extract domain from GITHUB_SERVER_URL)
-        REMOTE_INPUT="${{ inputs.remote }}"
-        if [[ -z "${REMOTE_INPUT}" ]]; then
-          REMOTE="${GITHUB_SERVER_URL##*// }"
-          echo "remote=${REMOTE}" >> "$GITHUB_OUTPUT"
-        else
-          echo "remote=${REMOTE_INPUT}" >> "$GITHUB_OUTPUT"
-        fi
-
-        # Set owner
-        OWNER_INPUT="${{ inputs.owner }}"
-        if [[ -z "${OWNER_INPUT}" ]]; then
-          echo "owner=${{ env.GITHUB_REPOSITORY_OWNER }}" >> "$GITHUB_OUTPUT"
-        else
-          echo "owner=${OWNER_INPUT}" >> "$GITHUB_OUTPUT"
-        fi
-
-        # Set repo (extract repo name from GITHUB_REPOSITORY)
-        REPO_INPUT="${{ inputs.repo }}"
-        if [[ -z "${REPO_INPUT}" ]]; then
-          REPO="${GITHUB_REPOSITORY##*/}"
-          echo "repo=${REPO}" >> "$GITHUB_OUTPUT"
-        else
-          echo "repo=${REPO_INPUT}" >> "$GITHUB_OUTPUT"
-        fi
-
-        echo "::notice::Set defaults - remote: $(grep 'remote=' "$GITHUB_OUTPUT" | cut -d'=' -f2), owner: $(grep 'owner=' "$GITHUB_OUTPUT" | cut -d'=' -f2), repo: $(grep 'repo=' "$GITHUB_OUTPUT" | cut -d'=' -f2)"
-      shell: bash
-    - id: dryrun-arg
-      name: Set dry-run arg
-      run: |
-        if [[ "${{ inputs.dry-run }}" == "true" ]] && [[ "${{ env.GITHUB_HEAD_REF }}" == "${{ env.GITHUB_BASE_REF }}" ]]; then
-          echo "arg=--dry-run" >> "$GITHUB_OUTPUT"
-        elif [[ "${{ inputs.dry-run-on-non-default-branch }}" == "true" ]] && [[ "${{ env.GITHUB_HEAD_REF }}" != "${{ env.GITHUB_BASE_REF }}" ]]; then
-          echo "arg=--dry-run" >> "$GITHUB_OUTPUT"
-        else
-          echo "arg=" >> "$GITHUB_OUTPUT"
-        fi
-        echo "::notice::Set output $(cat "$GITHUB_OUTPUT")"
-      shell: bash
     - name: Configure Git User
       uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/configure-git-user@0.31.3
     - name: Install yq
@@ -115,112 +72,18 @@ runs:
     - name: Install cocogitto
       uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-cocogitto@0.31.3
     - name: Install uv and python
-      if: ${{ inputs.update_cog_toml == 'true' }}
       uses: https://github.com/astral-sh/setup-uv@v6
       with:
         enable-cache: true
         activate-environment: true
-    - name: Verify/set cog config values
-      if: ${{ inputs.update_cog_toml == 'true' }}
+    - name: Install python packages
       shell: bash
-      run: |
-        echo "::group::Verify/set cog config values"
-        uv pip install -r actions/release-with-cog/requirements.txt
-        COG_REMOTE="${{ steps.set-defaults.outputs.remote }}"
-        COG_OWNER="${{ steps.set-defaults.outputs.owner }}"
-        COG_REPOSITORY="${{ steps.set-defaults.outputs.repo }}"
-        export COG_REMOTE COG_OWNER COG_REPOSITORY
-        python3 actions/release-with-cog/setup_cog_config.py
-        git add cog.toml
-        if ! git diff --cached --quiet; then
-          git commit -m "chore: update cog.toml with remote/owner/repo [skip ci]" || true
-          git push origin HEAD
-        else
-          echo "No changes to cog.toml"
-        fi
-        echo "::endgroup::"
-    - id: previous_version
-      name: Output previous_version
-      working-directory: ${{ inputs.working-directory }}
-      run: |
-        echo "::group::Determine previous version"
-        pushd "$WORK_DIR" || exit 1
-        cog get-version
-        echo "previous_version=$( cog get-version 2>/dev/null )"  >> "$GITHUB_OUTPUT"
-        popd || exit 1
-        echo "::endgroup::"
-      shell: bash
-    - name: Semver release
-      id: release
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-      run: |
-        set -x
-        cog bump ${{ inputs.cog_bump_args }} ${{ steps.dryrun-arg.outputs.arg }} --auto --skip-ci || true
-        git status
-        git diff
-      continue-on-error: true
-    - id: current_version
-      working-directory: ${{ inputs.working-directory }}
-      name: Output current_version
-      run: |
-        cog get-version
-        echo "current_version=$( cog get-version 2>/dev/null )"  >> "$GITHUB_OUTPUT"
-      shell: bash
-    - id: changelog
-      name: Output changelog
-      #working-directory: ${{ inputs.working-directory }}
-      run: |
-        set -x
-        # Build changelog args with remote, owner, repo from set-defaults step
-        CHANGELOG_ARGS="${{ inputs.cog_changelog_args }}"
-        REMOTE_VALUE="${{ steps.set-defaults.outputs.remote }}"
-        OWNER_VALUE="${{ steps.set-defaults.outputs.owner }}"
-        REPO_VALUE="${{ steps.set-defaults.outputs.repo }}"
+      run: uv pip install -r actions/release-with-cog/requirements.txt
 
-        if [[ -n "${REMOTE_VALUE}" && -n "${OWNER_VALUE}" && -n "${REPO_VALUE}" ]]; then
-          CHANGELOG_ARGS="${CHANGELOG_ARGS} --remote ${REMOTE_VALUE} --owner ${OWNER_VALUE} --repository ${REPO_VALUE}"
-        fi
-
-        echo "Generating changelog with: cog ${CHANGELOG_ARGS} changelog --at \"$(yq -o csv '.tag_prefix // ""' cog.toml)""$(cog get-version 2>/dev/null)\""
-        echo 'changelog<<EOF' >> "$GITHUB_OUTPUT"
-        cog changelog ${CHANGELOG_ARGS} --at "$(yq -o csv '.tag_prefix // ""' cog.toml)""$(cog get-version 2>/dev/null)" >> "$GITHUB_OUTPUT"
-        echo 'EOF' >> "$GITHUB_OUTPUT"
-      shell: bash
-    - id: install-jo
-      name: Install jo
-      if: ${{ inputs.create-forgejo-release == 'true' && steps.current_version.outputs.current_version != '' }}
-      shell: bash
-      run: |
-        echo "::startgroup::Install jo"
-        set -x
-        apt-get update
-        apt-get install -y jo
-        jo -v
-        echo "::endgroup::"
-    - id: install-forgejo-curl
-      name: Install helper script
-      if: ${{ steps.install-jo.outcome == 'success' }}
-      shell: bash
-      run: |
-        echo "::startgroup::Install forgejo-curl.sh and login"
-        set -x
-        curl --fail -sS -o /usr/local/bin/forgejo-curl.sh "https://git.h.oluflorenzen.de/mirrors/forgejo-curl/raw/branch/main/forgejo-curl.sh" && chmod +x /usr/local/bin/forgejo-curl.sh
-        export PATH=/usr/local/bin:$PATH
-        forgejo-curl.sh --token "${{ env.FORGEJO_TOKEN }}" login ${{ env.FORGEJO_SERVER_URL }}
-        forgejo-curl.sh api_json ${{ env.FORGEJO_SERVER_URL }}/api/v1/user
-        echo "::endgroup::"
-
-    - name: Create Forgejo release with the generated changelog
-      if: ${{ steps.install-jo.outcome == 'success' }}
+    - name: Run release-with-cog Python script
+      id: release_with_cog
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
-        CHANGELOG="${{ steps.changelog.outputs.changelog }}"
-        VERSION="${{ steps.current_version.outputs.current_version }}"
-        JSON_PAYLOAD=$(jo name="$VERSION" tag_name="$VERSION" body="$CHANGELOG")
-        FORGEJO_API_RETURN=$(forgejo-curl.sh --verbose api_json --data-raw "${JSON_PAYLOAD}" "${{ env.GITHUB_SERVER_URL }}/api/v1/repos/${{ env.GITHUB_REPOSITORY }}/releases")
-        echo "Forgejo API response: $FORGEJO_API_RETURN"
-        echo "forgejo_release_output<<EOF" >> "$GITHUB_OUTPUT"
-        echo "$FORGEJO_API_RETURN" >> "$GITHUB_OUTPUT"
-        echo "EOF" >> "$GITHUB_OUTPUT"
+        python3 actions/release-with-cog/release_with_cog.py
+      continue-on-error: false

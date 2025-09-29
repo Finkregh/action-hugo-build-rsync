@@ -163,7 +163,9 @@ class TestSetupCogConfig(unittest.TestCase):
             updated_config = tomllib.load(f)
 
         assert updated_config["changelog"]["remote"] == "existing-remote"  # noqa: S101
-        assert updated_config["changelog"]["repository"] == "existing-repo"
+        assert (  # noqa: S101
+            updated_config["changelog"]["repository"] == "existing-repo"
+        )
         assert updated_config["changelog"]["owner"] == "existing-owner"  # noqa: S101
 
     def test_values_none_provided(self) -> None:
