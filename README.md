@@ -20,28 +20,14 @@ Formats code with Prettier and lints Markdown files, automatically pushing any f
 
 [📖 Full Documentation](actions/prettier-markdown/README.md)
 
-### Cocogitto Release and Changelog (`actions/cog-release-changelog`)
+### Show Cocogitto generated changelog in PR comment (`actions/cog-pr-changelog`)
 
-Combines version determination using cocogitto, release creation, and optional package building/publishing using custom commands.
-
-- Version management with cocogitto (current, new, and development versions)
-- Automatic release creation with changelogs
-- Generic build tool integration (supports UV, Poetry, npm, Cargo, Maven, Gradle, etc.)
-- Flexible configuration with customizable build commands
-- Environment variables support
-- Optional Forgejo integration
-
-[📖 Full Documentation](actions/cog-release-changelog/README.md)
-
-### Cocogitto PR Changelog (`actions/cog-pr-changelog`)
-
-Generates a changelog using cocogitto and posts it as a comment to Pull Requests, with automatic comment updating.
+Generates a changelog using cocogitto and posts it as a comment to Pull Requests.
 
 - Changelog generation from conventional commits using cocogitto
 - Automatic PR comment posting and updating
 - Customizable comment header and footer
 - Configurable changelog generation options
-- Works with Forgejo and GitHub
 - Prevents duplicate comments by updating existing ones
 
 [📖 Full Documentation](actions/cog-pr-changelog/README.md)

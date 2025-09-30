@@ -18,6 +18,18 @@ inputs:
     type: string
   create-forgejo-release:
     type: boolean
+  update_cog_toml:
+    type: boolean
+  pr_changelog_pattern:
+    type: string
+  comment_header:
+    type: string
+  comment_footer:
+    type: string
+  forgejo_token:
+    type: string
+  forgejo_server_url:
+    type: string
 outputs:
   current_version:
     type: string
@@ -28,4 +40,8 @@ outputs:
   forgejo_release_url:
     type: string
   forgejo_release_output:
+    type: string
+  comment_id:
+    type: string
+  comment_url:
     type: string

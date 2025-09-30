@@ -1,0 +1,40 @@
+---
+name: Test Action
+
+on:
+  pull_request:
+    paths:
+      - "actions/release-with-cog/setup_cog_config.py"
+      - ".github/workflows/test-release-with-cog.yml"
+
+jobs:
+  test-setup-cog-config:
+    name: Test setup_cog_config script
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv and python
+        uses: https://github.com/astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          activate-environment: true
+      - name: Install python packages
+        shell: bash
+        run: uv pip install tomli tomli-w
+
+      - name: Run unit tests
+        run: |
+          cd actions/release-with-cog || exit 1
+          python setup_cog_config.py test
+
+      - name: Test script execution (dry run)
+        run: |
+          cd actions/release-with-cog || exit 1
+          # Create a test cog.toml for dry run
+          touch test_cog.toml
+          python -c 'import setup_cog_config; result = setup_cog_config.setup_cog_config("test_cog.toml", "test-remote", "test-repo", "test-owner"); print("Changes made:", result)'
+          # Clean up
+          rm -f test_cog.toml
