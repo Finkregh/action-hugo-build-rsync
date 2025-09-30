@@ -5,14 +5,16 @@ This script handles version management, changelog generation, and Forgejo releas
 creation using Python libraries instead of complex bash scripting.
 """
 
-# ruff: noqa: S603, S607
+# ruff: noqa: S603, S607, E501
 
 import json
+import logging
 import os
 import subprocess
 import sys
 
 try:
+    import requests
     import tomllib
     from github_action_toolkit import (
         debug,
@@ -26,7 +28,6 @@ try:
         start_group,
         warning,
     )
-    from pyforgejo import PyforgejoApi
 except ImportError as e:
     print(f"Error: Required packages not found: {e}")  # noqa: T201
     sys.exit(1)
@@ -34,9 +35,94 @@ except ImportError as e:
 # Import the existing setup_cog_config function
 from setup_cog_config import setup_cog_config
 
+# set root logger to debug level
+external_loggers = ["urllib3:DEBUG", "requests:DEBUG"]
+for logger_loglevel in external_loggers:
+    logger, level = logger_loglevel.split(":")
+    logging.getLogger(name=logger).setLevel(level=level.upper())
+logging.basicConfig(level=logging.DEBUG)
+
 
 class ReleaseWithCogError(Exception):
     """Custom exception for release-with-cog errors."""
+
+
+class ForgejoApiClient:
+    """Simple Forgejo API client using requests."""
+
+    def __init__(self, base_url: str, token: str) -> None:
+        """Initialize the API client."""
+        self.base_url = base_url.rstrip("/")
+        self.token = token
+        self.session = requests.Session()
+        self.session.headers.update(
+            {
+                "Authorization": f"token {token}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+        )
+
+    def get_issue_comments(
+        self,
+        owner: str,
+        repo: str,
+        issue_number: int,
+    ) -> list[dict]:
+        """Get all comments for an issue."""
+        url = f"{self.base_url}/api/v1/repos/{owner}/{repo}/issues/{issue_number}/comments"
+        response = self.session.get(url)
+        response.raise_for_status()
+        return response.json()
+
+    def create_issue_comment(
+        self,
+        owner: str,
+        repo: str,
+        issue_number: int,
+        body: str,
+    ) -> dict:
+        """Create a new comment on an issue."""
+        url = f"{self.base_url}/api/v1/repos/{owner}/{repo}/issues/{issue_number}/comments"
+        data = {"body": body}
+        response = self.session.post(url, json=data)
+        response.raise_for_status()
+        return response.json()
+
+    def edit_issue_comment(
+        self,
+        owner: str,
+        repo: str,
+        comment_id: int,
+        body: str,
+    ) -> dict:
+        """Edit an existing comment."""
+        url = (
+            f"{self.base_url}/api/v1/repos/{owner}/{repo}/issues/comments/{comment_id}"
+        )
+        data = {"body": body}
+        response = self.session.patch(url, json=data)
+        response.raise_for_status()
+        return response.json()
+
+    def create_release(
+        self,
+        owner: str,
+        repo: str,
+        tag_name: str,
+        name: str,
+        body: str,
+    ) -> dict:
+        """Create a new release."""
+        url = f"{self.base_url}/api/v1/repos/{owner}/{repo}/releases"
+        data = {
+            "tag_name": tag_name,
+            "name": name,
+            "body": body,
+        }
+        response = self.session.post(url, json=data)
+        response.raise_for_status()
+        return response.json()
 
 
 def is_pull_request_event() -> bool:
@@ -431,8 +517,8 @@ def post_pr_comment(  # noqa: PLR0913
 
 {comment_footer}"""
 
-        # Create pyforgejo client
-        client = PyforgejoApi(base_url=server_url, api_key=token)
+        # Create Forgejo API client
+        client = ForgejoApiClient(base_url=server_url, token=token)
 
         # Check for existing comment
         comment_identifier = comment_header
@@ -440,16 +526,16 @@ def post_pr_comment(  # noqa: PLR0913
 
         try:
             # Get existing comments
-            comments = client.issue.get_comments(
+            comments = client.get_issue_comments(
                 owner=owner,
                 repo=repo,
-                index=int(pr_number),
+                issue_number=int(pr_number),
             )
 
             # Find existing comment with our identifier
             for comment in comments:
-                if comment.body and comment_identifier in comment.body:
-                    existing_comment_id = comment.id
+                if comment.get("body") and comment_identifier in comment["body"]:
+                    existing_comment_id = comment["id"]
                     info(f"Found existing comment with ID: {existing_comment_id}")
                     break
 
@@ -460,27 +546,26 @@ def post_pr_comment(  # noqa: PLR0913
         if existing_comment_id:
             # Update existing comment
             info("Updating existing comment...")
-            response = client.issue.edit_comment(
+            response = client.edit_issue_comment(
                 owner=owner,
                 repo=repo,
-                id=existing_comment_id,
+                comment_id=existing_comment_id,
                 body=comment_body,
             )
             comment_id = str(existing_comment_id)
         else:
             # Create new comment
             info("Creating new comment...")
-            response = client.issue.create_comment(
+            response = client.create_issue_comment(
                 owner=owner,
                 repo=repo,
-                index=int(pr_number),
+                issue_number=int(pr_number),
                 body=comment_body,
             )
-            comment_id = str(response.id)
+            comment_id = str(response["id"])
 
         # Generate comment URL
-        comment_url = getattr(
-            response,
+        comment_url = response.get(
             "html_url",
             f"{server_url}/{owner}/{repo}/pulls/{pr_number}#issuecomment-{comment_id}",
         )
@@ -532,11 +617,11 @@ def create_forgejo_release(
 
         info(f"Creating Forgejo release for {owner}/{repo} version {version}")
 
-        # Create pyforgejo client
-        client = PyforgejoApi(base_url=server_url, api_key=token)
+        # Create Forgejo API client
+        client = ForgejoApiClient(base_url=server_url, token=token)
 
         # Create release
-        response = client.repository.repo_create_release(
+        response = client.create_release(
             owner=owner,
             repo=repo,
             tag_name=version,
@@ -545,8 +630,7 @@ def create_forgejo_release(
         )
 
         # Convert Release object to JSON string for output
-        release_url = getattr(
-            response,
+        release_url = response.get(
             "html_url",
             f"{server_url}/{owner}/{repo}/releases/tag/{version}",
         )
@@ -558,7 +642,7 @@ def create_forgejo_release(
             "name": version,
             "body": changelog,
             "html_url": release_url,
-            "id": getattr(response, "id", None),
+            "id": response.get("id"),
         }
 
         end_group()

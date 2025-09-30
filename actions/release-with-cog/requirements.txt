@@ -1,5 +1,5 @@
 tomli
 tomli-w
 structlog
-pyforgejo==2.0.4
+requests>=2.25.0
 github-action-toolkit
