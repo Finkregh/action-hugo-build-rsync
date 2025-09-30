@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## release-with-cog-0.2.0 - 2025-09-30
+#### Bug Fixes
+- **(release-with-cog)** fail on changelog generation error - (376ba61) - Oluf Lorenzen
+#### Features
+- **(release-with-cog)** use requests - (a1d4609) - Oluf Lorenzen
+- **(release-with-cog)** add function to create comments on PRs with changelog - (59edbe2) - Oluf Lorenzen
+- **(release-with-cog)** rewrite in python - (337ccc2) - Oluf Lorenzen
+- **(release-with-cog)** make updating cog.toml optional - (2c2becb) - Oluf Lorenzen
+#### Miscellaneous Chores
+- changes from ci - (a6907c9) - finkregh
+- changes from ci - (d6e644d) - finkregh
+
+- - -
+
 
 ## release-with-cog-0.1.0 - 2025-09-29
 

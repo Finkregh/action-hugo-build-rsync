@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## hugo-build-rsync-0.2.0 - 2025-09-30
+#### Features
+- **(release-with-cog)** use requests - (a1d4609) - Oluf Lorenzen
+#### Miscellaneous Chores
+- changes from ci - (d6e644d) - finkregh
+
+- - -
+
 
 ## hugo-build-rsync-0.1.0 - 2025-09-29
 
