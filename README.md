@@ -20,17 +20,18 @@ Formats code with Prettier and lints Markdown files, automatically pushing any f
 
 [📖 Full Documentation](actions/prettier-markdown/README.md)
 
-### Show Cocogitto generated changelog in PR comment (`actions/cog-pr-changelog`)
+### Release with Cog (`actions/release-with-cog`)
 
-Generates a changelog using cocogitto and posts it as a comment to Pull Requests.
+Creates releases using [cocogitto](https://github.com/cocogitto/cocogitto) with changelog generation and PR comment support.
 
-- Changelog generation from conventional commits using cocogitto
-- Automatic PR comment posting and updating
-- Customizable comment header and footer
-- Configurable changelog generation options
-- Prevents duplicate comments by updating existing ones
+- Main branch mode: Creates releases, bumps versions, and generates changelogs - all based on [conventional commits](https://www.conventionalcommits.org/)
+- Pull request mode: Generates changelogs and posts them as PR comments
+- Supports Forgejo release creation
+- used in this repository
+  - [cogitto config](cog.toml)
+  - [workflow](.forgejo/workflows/release-changelog.yml)
 
-[📖 Full Documentation](actions/cog-pr-changelog/README.md)
+[📖 Full Documentation](actions/release-with-cog/README.md)
 
 ## License
 
