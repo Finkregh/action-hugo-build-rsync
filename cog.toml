@@ -21,6 +21,13 @@ remote = "https://git.h.oluflorenzen.de"
 repository = "action-hugo-build-rsync"
 owner = "finkregh"
 
+[commit_types]
+chore = { bump_patch = true }
+revert = { bump_minor = true }
+docs = { bump_patch = true }
+style = { bump_patch = true }
+perf = { bump_patch = true }
+
 [packages.ci]
 path = ".forgejo/workflows"
 public_api = false
