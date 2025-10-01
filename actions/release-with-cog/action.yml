@@ -98,7 +98,7 @@ runs:
     - name: Install cocogitto
       uses: https://git.h.oluflorenzen.de/mirrors/codeberg.PurpleBooth.common-pipelines/actions/install-cocogitto@0.31.3
     - name: Install uv and python
-      uses: https://github.com/astral-sh/setup-uv@v6
+      uses: https://github.com/astral-sh/setup-uv@v6.8
       with:
         enable-cache: true
         activate-environment: true
