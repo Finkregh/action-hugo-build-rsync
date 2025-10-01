@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## ci-0.1.1 - 2025-10-01
+#### Miscellaneous Chores
+- **(deps)** update all dependencies to v5 - (5c9a793) - Renovate Bot
+- **(deps)** update all dependencies - (f0ef8eb) - Renovate Bot
+
+- - -
+
 ## ci-0.1.0 - 2025-09-30
 #### Continuous Integration
 - fix - (a496131) - Oluf Lorenzen
