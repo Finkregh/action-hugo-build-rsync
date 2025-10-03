@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  lint:
+  markdown-prettier:
     runs-on: ubuntu-latest
     steps:
       - name: Extract branch name
@@ -24,7 +24,30 @@ jobs:
       - name: Markdown and prettier
         uses: ./actions/prettier-markdown
 
-  validate-typings:
+  yaml_shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: https://code.forgejo.org/actions/checkout@v5
+        with:
+          fetch-depth: 1
+      - name: Install uv and python
+        uses: https://github.com/astral-sh/setup-uv@v6.8
+        with:
+          enable-cache: true
+          activate-environment: true
+      - name: Install python packages
+        shell: bash
+        run: |
+          apt-get update
+          apt-get install shellcheck
+          uv pip install git+https://github.com/mschuett/yaml-shellcheck.git@v1.8.0
+      - name: yaml-shellcheck
+        shell: bash
+        run: find . -name \*.yaml -or -name \*.yml | xargs yaml_shellcheck --shell '#!/bin/bash -e' --command 'shellcheck --color=always'
+
+  validate-action-types:
     runs-on: "ubuntu-latest"
     steps:
       - uses: https://code.forgejo.org/actions/checkout@v5

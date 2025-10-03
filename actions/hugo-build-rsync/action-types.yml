@@ -2,6 +2,8 @@
 inputs:
   hugo_cachedir:
     type: string
+  pre-build-cmds:
+    type: string
   hugo_args:
     type: string
   main_domain:
