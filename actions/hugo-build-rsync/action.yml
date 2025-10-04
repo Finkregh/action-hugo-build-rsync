@@ -14,6 +14,10 @@ inputs:
   hugo_args:
     description: arguments to 'hugo build'
     default: "--minify"
+  pre-build-cmds:
+    description: Commands to run before hugo build, commands as a list "['cmd1', 'cmd2']"
+    default: "[]"
+    required: false
   main_domain:
     description: domain used in hugo baseURL for main branch builds
   pr_domain:
@@ -74,10 +78,9 @@ runs:
     - name: Install required packages
       run: |
         echo "::group::Installting required packages"
-        apk add  curl bash openssh-client rsync tar zstd
+        apk add  curl bash openssh-client rsync tar zstd jq
         echo "::endgroup::"
       shell: sh
-
     - name: Restore Hugo resources
       uses: actions/cache/restore@v4.3.0
       with:
@@ -100,7 +103,7 @@ runs:
         set -euo pipefail
         echo "::group::Setting variables"
         # shellcheck disable=SC2034
-        HUGO_ARGS="${{ inputs.hugo_args }}" 
+        HUGO_ARGS="${{ inputs.hugo_args }}"
         RSYNC_ARGS="${{ inputs.main_rsync_args }}"
         RSYNC_ARGS_PR="${{ inputs.pr_rsync_args }}"
         RSYNC_SERVER="${{ inputs.main_rsync_server }}"
@@ -151,11 +154,28 @@ runs:
         done
         echo "::endgroup::"
 
+    - id: pre-build-cmds
+      name: pre build commands
+      if: ${{ inputs.pre-build-cmds != '[""]' }}
+      shell: bash
+
+      run: |
+        set -x
+        set -euo pipefail
+        printf 'Running commands before build: ${{ inputs.pre-build-cmds }}\n'
+
+        while IFS=$'\n' read -r command; do
+            echo "Running: ${command}"
+            eval "${command}"
+        done < <(printf '${{ inputs.pre-build-cmds }}' | jq -r '.[]')
+        echo "Finished running pre-build commands"
+
     - id: build
       name: Build
       shell: bash
 
       run: |
+        set -x
         set -euo pipefail
         echo "${{ steps.set_vars.outputs }}"
         # shellcheck disable=SC2050
@@ -205,9 +225,9 @@ runs:
         echo -e '\n```\n\n' >> "$GITHUB_STEP_SUMMARY"
         if [ ! "${_rsync_exit}" == 0 ]; then
           echo "::warning::rsync failed with code ${_rsync_exit}, running again with 'RSYNC_RSH={RSYNC_RSH} -v'"
-          echo -e '### Rsync output with RSYNC_RSH appended with -v\n\n```' >> "$GITHUB_STEP_SUMMARY" 
+          echo -e '### Rsync output with RSYNC_RSH appended with -v\n\n```' >> "$GITHUB_STEP_SUMMARY"
           RSYNC_RSH="${RSYNC_RSH} -v" rsync ${RSYNC_ARGS} ./public/* "${RSYNC_USER}@${RSYNC_SERVER}:${RSYNC_DEST_DIR}" | tee -a "$GITHUB_STEP_SUMMARY"
-          echo -e '\n```' >> "$GITHUB_STEP_SUMMARY" 
+          echo -e '\n```' >> "$GITHUB_STEP_SUMMARY"
           echo "::error::rsync failed with ${_rsync_exit}"
           exit ${_rsync_exit}
         fi
