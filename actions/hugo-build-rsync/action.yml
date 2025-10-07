@@ -16,7 +16,7 @@ inputs:
     default: "--minify"
   pre-build-cmds:
     description: Commands to run before hugo build, commands as a list "['cmd1', 'cmd2']"
-    default: "[]"
+    default: '[]'
     required: false
   main_domain:
     description: domain used in hugo baseURL for main branch builds
