@@ -110,7 +110,7 @@ jobs:
       - uses: https://git.h.oluflorenzen.de/finkregh/action-hugo-build-rsync@main # or pin to version, e.g. @0.0.1
         with:
           #hugo_cachedir: "/tmp/hugo_cache"
-          pre-build-cmds: "['hugo mod get -u ./...']"
+          pre-build-cmds: '["hugo mod get -u ./..."]'
           #hugo_args: "--minify"
           main_domain: productiondomain.example.com
           # these will be combined to `prod-test-pr-${number}.testdomain.example.com`
