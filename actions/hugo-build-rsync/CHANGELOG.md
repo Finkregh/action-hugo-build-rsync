@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## hugo-build-rsync-0.3.1 - 2025-10-07
+#### Bug Fixes
+- example value - (7b2e6c9) - Oluf Lorenzen
+
+- - -
+
 ## hugo-build-rsync-0.3.0 - 2025-10-04
 #### Features
 - **(hugo-build-rsync)** allow running commands before hugo build - (7eb2517) - Oluf Lorenzen
